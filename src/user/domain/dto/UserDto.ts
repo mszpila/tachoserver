@@ -3,11 +3,18 @@
 // Inspired by Clean Code by Robert C. Martin(Uncle Bob)
 // https://stackoverflow.com/questions/16539238/public-fields-in-a-data-transfer-object
 
+import { AutoMap } from '@automapper/classes';
+
 export class UserDto {
+  @AutoMap()
   public id: string;
+  @AutoMap()
   public firstName: string;
+  @AutoMap()
   public lastName: string;
+  @AutoMap()
   public email: string;
+  @AutoMap()
   public password: string;
 
   static builder(): UserDtoBuilder {
@@ -50,11 +57,18 @@ export class UserDtoBuilder {
   build(): UserDto {
     // implement the Mapper!
     const userDto = new UserDto();
-    userDto.id = this._id;
-    userDto.firstName = this._firstName;
-    userDto.lastName = this._lastName;
-    userDto.email = this._email;
-    userDto.password = this._password;
+    const keys = Object.keys(this);
+    keys.forEach((key) => {
+      if (key) {
+        userDto[key.replace(/_/g, '')] = this[key];
+      }
+    });
+
+    // userDto.id = this._id;
+    // userDto.firstName = this._firstName;
+    // userDto.lastName = this._lastName;
+    // userDto.email = this._email;
+    // userDto.password = this._password;
     return userDto;
   }
 }

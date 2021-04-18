@@ -19,22 +19,31 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:unit": "jest --testPathPattern=test/unit",
+    "test:unit": "jest --runInBand --testPathPattern=test/unit",
     "test:integration": "jest --testPathPattern=test/integration"
   },
   "dependencies": {
+    "@automapper/classes": "^3.5.2",
+    "@automapper/core": "^3.5.2",
+    "@automapper/nestjs": "^3.5.2",
+    "@nartc/automapper": "^7.0.4",
     "@nestjs/common": "^7.6.15",
     "@nestjs/core": "^7.6.15",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/typeorm": "^7.1.5",
+    "@types/lodash": "^4.14.168",
+    "class-validator": "^0.13.1",
+    "lodash": "^4.17.21",
     "mongodb": "^3.6.6",
+    "nestjsx-automapper": "^3.1.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
     "typeorm": "^0.2.32"
   },
   "devDependencies": {
+    "@automapper/types": "^3.5.2",
     "@nestjs/cli": "^7.6.0",
     "@nestjs/schematics": "^7.3.0",
     "@nestjs/testing": "^7.6.15",
@@ -62,7 +71,10 @@
       "json",
       "ts"
     ],
-    "rootDir": "test",
+    "roots": [
+      "<rootDir>/src/",
+      "<rootDir>/test/"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"

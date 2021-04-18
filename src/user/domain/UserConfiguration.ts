@@ -2,7 +2,7 @@ import { InMemoryUserRepository } from './InMemoryUserRepository';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
 import { UserFacade } from './UserFacade';
-import { UserFactory } from './UserFactory';
+// import { UserFactory } from './UserFactory';
 
 export class UserConfiguration {
   userFacade(

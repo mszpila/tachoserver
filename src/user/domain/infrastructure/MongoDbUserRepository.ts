@@ -16,11 +16,11 @@ export class MongoDbUserRepository
     // this.map.set('id', user);
     // return user;
     await this.entityManager.save(user);
-    return UserDto.builder().id(user.id.getString()).build();
+    return UserDto.builder().id(user.id.toString()).build();
   }
 
   async findById(id: string): Promise<UserDto> {
     const foundUser = await this.entityManager.findOneOrFail(User, id);
-    return UserDto.builder().id(foundUser.id.getString()).build();
+    return UserDto.builder().id(foundUser.id.toString()).build();
   }
 }

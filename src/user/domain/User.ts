@@ -6,37 +6,57 @@ import { UserEmail } from './UserEmail';
 import { UserName, UserNameTypes } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserType } from './UserType';
+import { AutoMap } from '@automapper/classes';
 
 @Entity('users')
 export class User {
   @ObjectIdColumn()
+  @AutoMap({ typeFn: () => Uuid })
   private _id: Uuid;
+
   @Column()
+  @AutoMap({ typeFn: () => UserName })
   private firstName: UserName;
+
   @Column()
+  @AutoMap({ typeFn: () => UserName })
   private lastName: UserName;
+
   @Column()
+  @AutoMap({ typeFn: () => UserEmail })
   private email: UserEmail;
+
   @Column()
+  @AutoMap({ typeFn: () => UserPassword })
   private password: UserPassword;
+
   @Column()
   private isVerified: boolean;
+
   @Column()
   private isEmailVerified: boolean;
+
   @Column()
+  // @AutoMap({ typeFn: () => String })
   private userRoles: UserType[];
+
   @Column()
+  // @AutoMap({ typeFn: () => Boolean })
   private isBanned: boolean;
+
   @Column()
+  // @AutoMap({ typeFn: () => Boolean })
   private isDeleted: boolean;
   // @Column()
   // private accessToken: JWTToken;
   // @Column()
   // private refreshToken: RefreshToken;
+
   @Column()
+  // @AutoMap({ typeFn: () => Date })
   private lastActive: Date;
 
-  private constructor(
+  constructor(
     id: Uuid,
     firstName: UserName,
     lastName: UserName,
@@ -62,15 +82,15 @@ export class User {
     return this._id;
   }
 
-  static create(
-    firstName: UserName,
-    lastName: UserName,
-    email: UserEmail,
-    password?: UserPassword,
-    id?: Uuid,
-  ): User {
-    return new User(id, firstName, lastName, email, password);
-  }
+  // static create(
+  //   firstName: UserName,
+  //   lastName: UserName,
+  //   email: UserEmail,
+  //   password?: UserPassword,
+  //   id?: Uuid,
+  // ): User {
+  //   return new User(id, firstName, lastName, email, password);
+  // }
 
   toString() {
     return Object.assign(
@@ -79,6 +99,7 @@ export class User {
       { firstName: this.firstName.toString() },
       { lastName: this.lastName.toString() },
       { email: this.email.toString() },
+      { password: this.password.toString() },
     );
   }
 }

@@ -3,8 +3,13 @@ import { MongoDbUserRepository } from './domain/infrastructure/MongoDbUserReposi
 import { UserController } from './domain/infrastructure/UserController';
 import { UserQueryRepository } from './domain/IUserQueryRepository';
 import { UserRepository } from './domain/IUserRepository';
+import './domain/mapper/UserProfile';
 import { UserConfiguration } from './domain/UserConfiguration';
 import { UserFacade } from './domain/UserFacade';
+// import { Profile, ProfileBase } from 'nestjsx-automapper';
+
+// @Profile('usesrMapper')
+// class UserProfile extends ProfileBase {}
 
 const FacadeConfig = {
   provide: UserFacade,

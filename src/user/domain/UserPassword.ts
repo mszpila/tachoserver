@@ -1,12 +1,19 @@
 // import * as bcrypt from 'bcrypt-nodejs';
 
+import { AutoMap } from '@automapper/classes';
+
 export class UserPassword {
   public static minLength = 6;
 
+  @AutoMap()
   private hashedPassword: string;
 
-  private constructor(password: string) {
+  constructor(password: string) {
     this.hashedPassword = password;
+  }
+
+  toString(): string {
+    return this.hashedPassword;
   }
 
   // private static isAppropriateLength(password: string): boolean {
@@ -58,8 +65,8 @@ export class UserPassword {
   //   });
   // }
 
-  public static create(plainTextPassword: string): UserPassword {
-    // const propsResult = Guard.againstNullOrUndefined(props.value, 'password');
-    return new UserPassword(plainTextPassword);
-  }
+  // public static create(plainTextPassword: string): UserPassword {
+  //   // const propsResult = Guard.againstNullOrUndefined(props.value, 'password');
+  //   return new UserPassword(plainTextPassword);
+  // }
 }

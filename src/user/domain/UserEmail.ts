@@ -1,10 +1,15 @@
+import { AutoMap } from '@automapper/classes';
 import { BadRequestException } from '@nestjs/common';
 
 export class UserEmail {
+  @AutoMap()
   private email: string;
 
-  private constructor(email: string) {
-    this.email = email;
+  constructor(email: string) {
+    if (!UserEmail.isValidEmail(email)) {
+      throw new BadRequestException('Email address is not valid');
+    }
+    this.email = UserEmail.format(email);
   }
 
   private static isValidEmail(email: string) {
@@ -16,13 +21,13 @@ export class UserEmail {
     return email.trim().toLowerCase();
   }
 
-  public static create(email: string): UserEmail {
-    if (!this.isValidEmail(email)) {
-      throw new BadRequestException('Email address is not valid');
-    } else {
-      return new UserEmail(this.format(email));
-    }
-  }
+  // public static create(email: string): UserEmail {
+  //   if (!this.isValidEmail(email)) {
+  //     throw new BadRequestException('Email address is not valid');
+  //   } else {
+  //     return new UserEmail(this.format(email));
+  //   }
+  // }
 
   toString(): string {
     return this.email;

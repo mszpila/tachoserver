@@ -1,4 +1,6 @@
+import { PageRequest } from 'src/shared/domain/PageRequest';
 import { Uuid } from '../../shared/domain/Uuid';
+import { GetUserDto } from './dto/GetUserDto';
 import { UserDto } from './dto/UserDto';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
@@ -15,18 +17,28 @@ export class UserFacade {
   ) {}
 
   register(userDto: UserDto): void {
-    const firstName = UserName.create(userDto.firstName, UserNameTypes.FIRST);
-    const lastName = UserName.create(userDto.lastName, UserNameTypes.LAST);
-    const email = UserEmail.create(userDto.email);
-    const password = UserPassword.create(userDto.password);
-    const id = Uuid.create(userDto.id);
+    const firstName = new UserName(userDto.firstName, UserNameTypes.FIRST);
+    const lastName = new UserName(userDto.lastName, UserNameTypes.LAST);
+    const email = new UserEmail(userDto.email);
+    const password = new UserPassword(userDto.password);
+    const id = new Uuid(userDto.id);
 
-    const user: User = User.create(firstName, lastName, email, password, id);
+    const user: User = new User(id, firstName, lastName, email, password);
 
     this.userRepository.save(user);
   }
 
-  getUser(id: string): UserDto | Promise<UserDto> {
-    return this.userQueryRepository.findById(id);
+  getById(id: string): GetUserDto | Promise<GetUserDto> {
+    const user = this.userQueryRepository.findById(id);
+    return UserDto.builder()
+      .id(user.id)
+      .firstName(user.firstName)
+      .lastName(user.lastName)
+      .email(user.email)
+      .build();
+  }
+
+  find(pageRequest: PageRequest): GetUserDto[] | Promise<GetUserDto[]> {
+    return this.userQueryRepository.find(pageRequest);
   }
 }
