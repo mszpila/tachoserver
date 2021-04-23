@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongoDbUserRepository } from './domain/infrastructure/MongoDbUserRepository';
 import { UserController } from './domain/infrastructure/UserController';
 import { UserQueryRepository } from './domain/IUserQueryRepository';
 import { UserRepository } from './domain/IUserRepository';
-import './domain/mapper/UserProfile';
+import { User } from './domain/User';
 import { UserConfiguration } from './domain/UserConfiguration';
 import { UserFacade } from './domain/UserFacade';
 // import { Profile, ProfileBase } from 'nestjsx-automapper';
@@ -26,6 +27,7 @@ const FacadeConfig = {
 };
 
 @Module({
+  // imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [FacadeConfig, MongoDbUserRepository],
 })

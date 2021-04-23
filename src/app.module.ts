@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './user/domain/User';
 import { UserModule } from './user/user.module';
 
 const dbConfig = {
@@ -9,7 +12,16 @@ const dbConfig = {
 };
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRoot({
+      type: 'mongodb',
+      url: process.env.DB_URL,
+      // autoLoadEntities: true,
+      entities: [User],
+    }),
+    UserModule,
+  ],
   providers: [dbConfig],
 })
 export class AppModule {}

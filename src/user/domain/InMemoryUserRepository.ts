@@ -1,17 +1,8 @@
 import { User } from './User';
 import { UserRepository } from './IUserRepository';
-import { UserDto } from './dto/UserDto';
 import { UserQueryRepository } from './IUserQueryRepository';
-import { GetUserDto } from './dto/GetUserDto';
-import { mapper } from './mapper/Mapper';
-import { PageRequest } from 'src/shared/domain/PageRequest';
-// import _ from 'lodash';
-import * as _ from 'lodash';
-// import { mapper } from './mapper/Mapper';
-// import { Uuid } from 'src/shared/domain/Uuid';
-// import { UserName, UserNameTypes } from './UserName';
-// import { UserEmail } from './UserEmail';
-// import { UserPassword } from './UserPassword';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { FindDto } from './dto/FindDto';
 
 interface obj {
   [key: string]: string;
@@ -19,53 +10,105 @@ interface obj {
 
 export class InMemoryUserRepository
   implements UserRepository, UserQueryRepository {
-  private map: Map<string, any> = new Map<string, any>();
+  private map: Map<string, User> = new Map<string, User>();
 
-  save(user: User): void {
+  async save(user: User): Promise<boolean> {
     if (!user) {
-      throw Error('User cannot be null');
+      throw new BadRequestException('User cannot be null');
     }
-    if (this.map.has(user.id.toString())) {
-      const alreadySaved = this.map.get(user.id.toString());
-      this.map.set(
-        user.id.toString(),
-        Object.assign({}, alreadySaved, user.toString()),
-      );
-    } else {
-      this.map.set(user.id.toString(), user.toString());
+    if (this.alreadyExists(user.toDto().email)) {
+      throw new BadRequestException('Email already used');
     }
+    this.map.set(user.toDto().id, user);
+    return Promise.resolve(true);
   }
 
-  findById(id: string): any {
+  async findById(id: string): Promise<User> {
     const user = this.map.get(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
-    return user;
+    return Promise.resolve(user);
   }
 
-  // delete(user: User): void {}
-
-  find(pageRequest: PageRequest): GetUserDto[] {
-    const arr = _.toArray(this.map.values());
-    // return
-    const usersArray = [];
-    for (const user of this.map.values()) {
-      usersArray.push(
-        UserDto.builder()
-          .id(user.id)
-          .firstName(user.firstName)
-          .lastName(user.lastName)
-          .email(user.email)
-          .build(),
-      );
-    }
-    return usersArray;
+  async delete(id: string): Promise<boolean> {
+    this.map.delete(id);
+    return Promise.resolve(true);
   }
 
-  // buildResponse(
-  //   users: any[],
-  //   pageRequest: PageRequest,
-  //   size: number,
-  // ): GetUserDto[] {}
+  async find(query: FindDto): Promise<User[]> {
+    const users = this.mapToArray();
+    const usersFiltered = this.findFilter(users, query);
+    this.findSort(usersFiltered, query);
+
+    return await Promise.resolve(this.findSlice(usersFiltered, query));
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    const users: User[] = this.mapToArray();
+    const userFound = users.filter((user: User) => {
+      if (user.toDto().email === email) {
+        return true;
+      }
+    });
+    if (!userFound[0]) {
+      throw new NotFoundException('Wrong credentials');
+    }
+    return Promise.resolve(userFound[0]);
+  }
+
+  async findAndUpdate(id: string, user: User): Promise<boolean> {
+    this.map.set(id, user);
+    return Promise.resolve(true);
+  }
+
+  private mapToArray = (): User[] => {
+    const users: User[] = [];
+    this.map.forEach((user) => {
+      users.push(user);
+    });
+    return users;
+  };
+
+  private findFilter = (users: User[], query: FindDto): User[] => {
+    return users.filter((user: User) => {
+      if (
+        user.toDto().firstName.toLocaleLowerCase().includes(query.name) ||
+        user.toDto().lastName.toLocaleLowerCase().includes(query.name)
+      ) {
+        if (query.isVerified && user.toDto().isVerified) {
+          return true;
+        } else if (query.isVerified && !user.toDto().isVerified) {
+          return false;
+        }
+        return true;
+      }
+    });
+  };
+
+  private findSort = (users: User[], query: FindDto): User[] => {
+    return users.sort((a: User, b: User) => {
+      const key: string = Object.getOwnPropertyNames(query.sort)[0];
+      const result =
+        a.toDto()[key] < b.toDto()[key]
+          ? -1
+          : a.toDto()[key] > b.toDto()[key]
+          ? 1
+          : 0;
+      return result * query.sort[key];
+    });
+  };
+
+  private findSlice = (users: User[], query: FindDto): User[] => {
+    return users.slice(query.offset, query.offset + query.limit);
+  };
+
+  private alreadyExists = (email: string): boolean => {
+    const users = this.mapToArray();
+    return users.some((user: User) => {
+      if (user.toDto().email === email) {
+        return true;
+      }
+    });
+  };
 }

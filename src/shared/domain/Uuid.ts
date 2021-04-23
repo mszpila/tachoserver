@@ -25,9 +25,7 @@ export class Uuid {
       value = uuid();
     }
     if (!Uuid.isUuid(value)) {
-      throw new BadRequestException(
-        'Invalid argument; `value` is not a UUID value.',
-      );
+      throw new BadRequestException('Id is not a valid UUID value');
     }
     this.value = value;
   }

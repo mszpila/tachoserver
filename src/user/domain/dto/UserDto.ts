@@ -16,6 +16,8 @@ export class UserDto {
   public email: string;
   @AutoMap()
   public password: string;
+  @AutoMap()
+  public isVerified: boolean;
 
   static builder(): UserDtoBuilder {
     return new UserDtoBuilder();
@@ -28,6 +30,7 @@ export class UserDtoBuilder {
   private _lastName: string;
   private _email: string;
   private _password: string;
+  private _isVerified: boolean;
 
   id(id: string): UserDtoBuilder {
     this._id = id;
@@ -51,6 +54,11 @@ export class UserDtoBuilder {
 
   password(password: string): UserDtoBuilder {
     this._password = password;
+    return this;
+  }
+
+  isVerified(isVerified: boolean): UserDtoBuilder {
+    this._isVerified = isVerified;
     return this;
   }
 

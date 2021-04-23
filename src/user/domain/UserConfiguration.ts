@@ -9,17 +9,11 @@ export class UserConfiguration {
     userRepository?: UserRepository,
     userQueryRepository?: UserQueryRepository,
   ): UserFacade {
-    if (!userRepository && !userQueryRepository) {
+    if (!userRepository || !userQueryRepository) {
       const InMemoryRepository = new InMemoryUserRepository();
       userQueryRepository = InMemoryRepository;
       userRepository = InMemoryRepository;
-      // userRepository = new InMemoryUserRepository();
     }
-    // const userFactory: UserFactory = new UserFactory();
-    return new UserFacade(
-      userRepository,
-      userQueryRepository,
-      // userFactory
-    );
+    return new UserFacade(userRepository, userQueryRepository);
   }
 }

@@ -1,72 +1,46 @@
-// import * as bcrypt from 'bcrypt-nodejs';
-
-import { AutoMap } from '@automapper/classes';
+import * as bcrypt from 'bcrypt';
+import { BadRequestException } from '@nestjs/common';
 
 export class UserPassword {
-  public static minLength = 6;
-
-  @AutoMap()
   private hashedPassword: string;
 
   constructor(password: string) {
     this.hashedPassword = password;
   }
 
+  static async comparePassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    const result = await bcrypt.compare(plainPassword, hashedPassword);
+    if (!result) {
+      throw new BadRequestException('Wrong credentials');
+    }
+    return result;
+  }
+
   toString(): string {
     return this.hashedPassword;
   }
+}
 
-  // private static isAppropriateLength(password: string): boolean {
-  //   return password.length >= this.minLength;
-  // }
+export class UserPasswordCreator {
+  async createUserPassword(password: string): Promise<UserPassword> {
+    if (UserPasswordCreator.isValidPassword(password)) {
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+      return new UserPassword(hashedPassword);
+    }
+  }
 
-  // /**
-  //  * @method comparePassword
-  //  * @desc Compares as plain-text and hashed password.
-  //  */
-
-  // public async comparePassword(plainTextPassword: string): Promise<boolean> {
-  //   if (this.isAlreadyHashed()) {
-  //     return this.bcryptCompare(plainTextPassword, this.hashedPassword);
-  //   } else {
-  //     return this.password === plainTextPassword;
-  //   }
-  // }
-
-  // private bcryptCompare(plainText: string, hashed: string): Promise<boolean> {
-  //   return new Promise((resolve, reject) => {
-  //     bcrypt.compare(plainText, hashed, (err, compareResult) => {
-  //       if (err) return resolve(false);
-  //       return resolve(compareResult);
-  //     });
-  //   });
-  // }
-
-  // public isAlreadyHashed(): boolean {
-  //   return this.props.hashed;
-  // }
-
-  // private hashPassword(password: string): Promise<string> {
-  //   return new Promise((resolve, reject) => {
-  //     bcrypt.hash(password, null, null, (err, hash) => {
-  //       if (err) return reject(err);
-  //       resolve(hash);
-  //     });
-  //   });
-  // }
-
-  // public getHashedValue(): Promise<string> {
-  //   return new Promise((resolve) => {
-  //     if (this.isAlreadyHashed()) {
-  //       return resolve(this.props.value);
-  //     } else {
-  //       return resolve(this.hashPassword(this.props.value));
-  //     }
-  //   });
-  // }
-
-  // public static create(plainTextPassword: string): UserPassword {
-  //   // const propsResult = Guard.againstNullOrUndefined(props.value, 'password');
-  //   return new UserPassword(plainTextPassword);
-  // }
+  private static isValidPassword(password: string): boolean {
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[?!@#\$%\^&\*-])(?=.{8,})/.test(
+        password,
+      )
+    ) {
+      throw new BadRequestException('Password is not valid');
+    }
+    return true;
+  }
 }

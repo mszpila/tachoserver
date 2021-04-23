@@ -1,6 +1,7 @@
 import { User } from './User';
-import { Uuid } from '../../shared/domain/Uuid';
 
 export interface UserRepository {
-  save(user: User): void;
+  save(user: User): Promise<boolean>;
+  delete(id: string): Promise<boolean>;
+  findAndUpdate(id: string, user: User): Promise<boolean>;
 }

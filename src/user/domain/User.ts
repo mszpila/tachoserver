@@ -3,16 +3,17 @@ import { Column, Entity, ObjectIdColumn } from 'typeorm';
 // import { JWTToken } from './JWTToken';
 // import { RefreshToken } from './RefreshToken';
 import { UserEmail } from './UserEmail';
-import { UserName, UserNameTypes } from './UserName';
+import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserType } from './UserType';
 import { AutoMap } from '@automapper/classes';
+import { UserDto } from './dto/UserDto';
 
 @Entity('users')
 export class User {
   @ObjectIdColumn()
   @AutoMap({ typeFn: () => Uuid })
-  private _id: Uuid;
+  private id: Uuid;
 
   @Column()
   @AutoMap({ typeFn: () => UserName })
@@ -63,7 +64,7 @@ export class User {
     email: UserEmail,
     password?: UserPassword,
   ) {
-    this._id = id;
+    this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
@@ -78,28 +79,29 @@ export class User {
     this.lastActive = new Date();
   }
 
-  get id(): Uuid {
-    return this._id;
+  toDto(): UserDto {
+    return UserDto.builder()
+      .id(this.id.toString())
+      .firstName(this.firstName.toString())
+      .lastName(this.lastName.toString())
+      .email(this.email.toString())
+      .password(this.password.toString())
+      .isVerified(this.isVerified)
+      .build();
   }
 
-  // static create(
-  //   firstName: UserName,
-  //   lastName: UserName,
-  //   email: UserEmail,
-  //   password?: UserPassword,
-  //   id?: Uuid,
-  // ): User {
-  //   return new User(id, firstName, lastName, email, password);
-  // }
-
-  toString() {
-    return Object.assign(
-      {},
-      { id: this._id.toString() },
-      { firstName: this.firstName.toString() },
-      { lastName: this.lastName.toString() },
-      { email: this.email.toString() },
-      { password: this.password.toString() },
-    );
+  update(
+    id?: Uuid,
+    firstName?: UserName,
+    lastName?: UserName,
+    email?: UserEmail,
+    password?: UserPassword,
+  ): User {
+    this.id = id ? id : this.id;
+    this.firstName = firstName ? firstName : this.firstName;
+    this.lastName = lastName ? lastName : this.lastName;
+    this.email = email ? email : this.email;
+    this.password = password ? password : this.password;
+    return this;
   }
 }
