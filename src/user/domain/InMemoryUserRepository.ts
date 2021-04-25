@@ -3,6 +3,7 @@ import { UserRepository } from './IUserRepository';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FindDto } from './dto/FindDto';
+import { UserUpdateDto } from './dto/UpdateDto';
 
 interface obj {
   [key: string]: string;
@@ -57,8 +58,8 @@ export class InMemoryUserRepository
     return Promise.resolve(userFound[0]);
   }
 
-  async findAndUpdate(id: string, user: User): Promise<boolean> {
-    this.map.set(id, user);
+  async update(user: User): Promise<boolean> {
+    this.map.set(user.toDto().id, user);
     return Promise.resolve(true);
   }
 

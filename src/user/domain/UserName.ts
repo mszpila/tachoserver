@@ -16,25 +16,9 @@ export class UserName {
 
   constructor(name: string, type: UserNameTypes) {
     if (UserName.isValidName(name, type)) {
-      this.name = name;
+      this.name = UserName.format(name);
     }
   }
-
-  // public static create(name: string, type: UserNameTypes): UserName {
-  //   if (name == '' || name == null || name == undefined) {
-  //     throw new BadRequestException(`${type} name field must be provided`);
-  //   }
-
-  //   if (name.length < this.minLength) {
-  //     throw new BadRequestException(`${type} name is too short`);
-  //   }
-
-  //   if (name.length > this.maxLength) {
-  //     throw new BadRequestException(`${type} name is too long`);
-  //   }
-
-  //   return new UserName(name);
-  // }
 
   private static isValidName(name: string, type: UserNameTypes): boolean {
     if (name == '' || name == null || name == undefined) {
@@ -54,5 +38,10 @@ export class UserName {
 
   toString(): string {
     return this.name;
+  }
+
+  private static format(email: string): string {
+    const lowerCase = email.toLowerCase();
+    return lowerCase.charAt(0).toUpperCase() + lowerCase.slice(1);
   }
 }

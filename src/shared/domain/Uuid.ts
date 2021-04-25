@@ -1,12 +1,14 @@
 import { AutoMap } from '@automapper/classes';
 import { BadRequestException } from '@nestjs/common';
+import { ObjectIdColumn } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import validator from 'validator';
 // import { Entity } from "./Entity";
 
 export class Uuid {
   @AutoMap()
-  private value: string;
+  @ObjectIdColumn()
+  private id: string;
 
   // public static validator = new RegExp(
   //     /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
@@ -20,14 +22,14 @@ export class Uuid {
   //     }
   // }
 
-  constructor(value?: string) {
-    if (!value) {
-      value = uuid();
+  constructor(id?: string) {
+    if (!id) {
+      id = uuid();
     }
-    if (!Uuid.isUuid(value)) {
+    if (!Uuid.isUuid(id)) {
       throw new BadRequestException('Id is not a valid UUID value');
     }
-    this.value = value;
+    this.id = id;
   }
 
   // static create(id?: string): Uuid {
@@ -44,21 +46,21 @@ export class Uuid {
   //   return new Uuid(value);
   // }
 
-  static isUuid(value: string): boolean {
-    return validator.isUUID(value, 4);
-    // return Uuid.validator.test(value);
+  static isUuid(id: string): boolean {
+    return validator.isUUID(id, 4);
+    // return Uuid.validator.test(id);
   }
 
   toString(): string {
-    return this.value;
+    return this.id;
   }
 
   toJSON(): JSON {
-    return JSON.parse(this.value);
+    return JSON.parse(this.id);
   }
 
   equals(other: Uuid): boolean {
-    return Uuid.isUuid(other.toString()) && this.value === other.toString();
+    return Uuid.isUuid(other.toString()) && this.id === other.toString();
   }
 
   raw(): string {

@@ -19,13 +19,17 @@ export class UserPassword {
     return result;
   }
 
+  static builder(): UserPasswordCreator {
+    return new UserPasswordCreator();
+  }
+
   toString(): string {
     return this.hashedPassword;
   }
 }
 
 export class UserPasswordCreator {
-  async createUserPassword(password: string): Promise<UserPassword> {
+  async password(password: string): Promise<UserPassword> {
     if (UserPasswordCreator.isValidPassword(password)) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);

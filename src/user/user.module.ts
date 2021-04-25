@@ -8,6 +8,7 @@ import { User } from './domain/User';
 import { UserConfiguration } from './domain/UserConfiguration';
 import { UserFacade } from './domain/UserFacade';
 // import { Profile, ProfileBase } from 'nestjsx-automapper';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 // @Profile('usesrMapper')
 // class UserProfile extends ProfileBase {}
@@ -17,13 +18,15 @@ const FacadeConfig = {
   useFactory: (
     userRepository: UserRepository,
     userQueryRepository: UserQueryRepository,
+    eventEmitter: EventEmitter2,
   ) => {
     return new UserConfiguration().userFacade(
       userRepository,
       userQueryRepository,
+      eventEmitter,
     );
   },
-  inject: [MongoDbUserRepository],
+  inject: [MongoDbUserRepository, EventEmitter2],
 };
 
 @Module({
