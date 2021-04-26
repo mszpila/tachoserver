@@ -59,27 +59,28 @@ export class User {
   private lastActive: Date;
 
   constructor(
-    id: Uuid,
-    firstName: UserName,
-    lastName: UserName,
-    email: UserEmail,
-    password: UserPassword,
-    isVerified: boolean,
-    isEmailVerified: boolean,
-    userRoles: UserRoles[],
-    isBanned: boolean,
-    isDeleted: boolean,
+    // id: Uuid,
+    // firstName: UserName,
+    // lastName: UserName,
+    // email: UserEmail,
+    // password: UserPassword,
+    // isVerified: boolean,
+    // isEmailVerified: boolean,
+    // userRoles: UserRoles[],
+    // isBanned: boolean,
+    // isDeleted: boolean,
+    builder: UserBuilder,
   ) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.password = password;
-    this.isVerified = isVerified;
-    this.isEmailVerified = isEmailVerified;
-    this.userRoles = userRoles;
-    this.isBanned = isBanned;
-    this.isDeleted = isDeleted;
+    this.id = builder.id;
+    this.firstName = builder.firstName;
+    this.lastName = builder.lastName;
+    this.email = builder.email;
+    this.password = builder.password;
+    this.isVerified = builder.isVerified;
+    this.isEmailVerified = builder.isEmailVerified;
+    this.userRoles = builder.userRoles;
+    this.isBanned = builder.isBanned;
+    this.isDeleted = builder.isDeleted;
     // this.accessToken = new JWTToken();
     // this.refreshToken = new RefreshToken();
     this.lastActive = new Date();

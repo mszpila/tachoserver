@@ -24,11 +24,11 @@ export class UserFacade {
     const { id, firstName, lastName, email, password } = userDto;
     const user: User = (
       await User.builder()
-        .id(id)
-        .firstName(firstName)
-        .lastName(lastName)
-        .email(email)
-        .password(password)
+        .withId(id)
+        .withFirstName(firstName)
+        .withLastName(lastName)
+        .withEmail(email)
+        .withPassword(password)
     ).build();
 
     return await this.userRepository.save(user);

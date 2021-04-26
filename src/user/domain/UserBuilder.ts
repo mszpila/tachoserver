@@ -6,81 +6,82 @@ import { UserPassword } from './UserPassword';
 import { UserRoles } from './UserRoles';
 
 export class UserBuilder {
-  private _id: Uuid;
-  private _firstName: UserName;
-  private _lastName: UserName;
-  private _email: UserEmail;
-  private _password: UserPassword;
-  private _isVerified = false;
-  private _isEmailVerified = false;
-  private _userRoles = [UserRoles.USER];
-  private _isBanned = false;
-  private _isDeleted = false;
-  // private _accessToken: JWTToken;
-  // private _refreshToken: RefreshToken;
+  public id: Uuid;
+  public firstName: UserName;
+  public lastName: UserName;
+  public email: UserEmail;
+  public password: UserPassword;
+  public isVerified = false;
+  public isEmailVerified = false;
+  public userRoles = [UserRoles.USER];
+  public isBanned = false;
+  public isDeleted = false;
+  // public accessToken: JWTToken;
+  // public refreshToken: RefreshToken;
 
-  id(id: string): UserBuilder {
-    this._id = new Uuid(id);
+  withId(id: string): UserBuilder {
+    this.id = new Uuid(id);
     return this;
   }
 
-  firstName(firstName: string): UserBuilder {
-    this._firstName = new UserName(firstName, UserNameTypes.FIRST);
+  withFirstName(firstName: string): UserBuilder {
+    this.firstName = new UserName(firstName, UserNameTypes.FIRST);
     return this;
   }
 
-  lastName(lastName: string): UserBuilder {
-    this._lastName = new UserName(lastName, UserNameTypes.LAST);
+  withLastName(lastName: string): UserBuilder {
+    this.lastName = new UserName(lastName, UserNameTypes.LAST);
     return this;
   }
 
-  email(email: string): UserBuilder {
-    this._email = new UserEmail(email);
+  withEmail(email: string): UserBuilder {
+    this.email = new UserEmail(email);
     return this;
   }
 
-  async password(password: string): Promise<UserBuilder> {
-    this._password = await UserPassword.builder().password(password);
+  async withPassword(password: string): Promise<UserBuilder> {
+    this.password = await UserPassword.builder().password(password);
     return this;
   }
 
-  isVerified(isVerified: boolean): UserBuilder {
-    this._isVerified = isVerified;
+  withIsVerified(isVerified: boolean): UserBuilder {
+    this.isVerified = isVerified;
     return this;
   }
 
-  isEmailVerified(isEmailVerified: boolean): UserBuilder {
-    this._isEmailVerified = isEmailVerified;
+  withIsEmailVerified(isEmailVerified: boolean): UserBuilder {
+    this.isEmailVerified = isEmailVerified;
     return this;
   }
 
-  userRoles(userRoles: UserRoles[]): UserBuilder {
-    this._userRoles = userRoles;
+  withUserRoles(userRoles: UserRoles[]): UserBuilder {
+    this.userRoles = userRoles;
     return this;
   }
 
-  isBanned(isBanned: boolean): UserBuilder {
-    this._isBanned = isBanned;
+  withIsBanned(isBanned: boolean): UserBuilder {
+    this.isBanned = isBanned;
     return this;
   }
 
-  isDeleted(isDeleted: boolean): UserBuilder {
-    this._isDeleted = isDeleted;
+  withIsDeleted(isDeleted: boolean): UserBuilder {
+    this.isDeleted = isDeleted;
     return this;
   }
 
   build(): User {
     return new User(
-      this._id,
-      this._firstName,
-      this._lastName,
-      this._email,
-      this._password,
-      this._isVerified,
-      this._isEmailVerified,
-      this._userRoles,
-      this._isBanned,
-      this._isDeleted,
+      this,
+      // this.id,
+      // this.firstName,
+      // this.lastName,
+      // this.email,
+      // this.password,
+      // this.isVerified,
+      // this.isEmailVerified,
+      // this.userRoles,
+      // this.isBanned,
+      // this.isDeleted,
     );
   }
 }
