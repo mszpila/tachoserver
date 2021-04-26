@@ -33,5 +33,6 @@ const FacadeConfig = {
   // imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [FacadeConfig, MongoDbUserRepository],
+  exports: [UserFacade],
 })
 export class UserModule {}
