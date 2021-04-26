@@ -20,7 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:ee": "jest --config ./test/jest-e2e.json",
     "test:impl": "jest --runInBand --testPathPattern=test/implementation",
-    "test:unit": "jest --runInBand --testPathPattern=test/unit",
+    "test:unit": "jest --runInBand --testPathPattern=test/unit --watch",
     "test:int": "jest --testPathPattern=test/integration"
   },
   "dependencies": {
@@ -31,6 +31,7 @@
     "@nestjs/common": "^7.6.15",
     "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.6.15",
+    "@nestjs/event-emitter": "0.0.3",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/typeorm": "^7.1.5",

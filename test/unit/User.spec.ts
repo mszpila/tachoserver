@@ -1,7 +1,9 @@
+import { UploadDocumentDto } from '../../src/user/domain/dto/UploadDocumentDto';
 import { UserDto } from '../../src/user/domain/dto/UserDto';
 import { UserConfiguration } from '../../src/user/domain/UserConfiguration';
 import { UserFacade } from '../../src/user/domain/UserFacade';
 import { SampleUser } from '../sample_data/SampleUser';
+// import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 const userFacade: UserFacade = new UserConfiguration().userFacade();
 
@@ -112,6 +114,7 @@ describe('registration', () => {
   test('should not register a new user due to empty password', async () => {
     // given
     const badUser = SampleUser.sampleNewUser({
+      email: 'foo@example.com',
       password: '',
     });
     // then
@@ -251,16 +254,38 @@ describe('get', () => {
   // });
 });
 
-describe('verification', () => {
-  test('should confirm the verification of user', async () => {
+describe('upload', () => {
+  //
+});
+
+describe('events', () => {
+  // const eventEmitter = new EventEmitter2();
+  // jest.mock('@nestjs/event-emitter');
+
+  test('should emit verification request', async () => {
     // given verification submission
-    await userFacade.submitVerification(AnakinSkywalker.id);
+    const upload = new UploadDocumentDto();
+    // {
+    //   frontUrl: 'http://localhost.com/frontImg',
+    //   backUrl: 'http://localhost.com/backImg',
+    //   selfieUrl: 'http://localhost.com/selfieImg',
+    // };
+    upload.frontUrl = 'http://localhost.com/frontImg';
+    upload.backUrl = 'http://localhost.com/backImg';
+    upload.selfieUrl = 'http://localhost.com/selfieImg';
+    // expect emit event
+    expect(
+      await userFacade.submitVerification(AnakinSkywalker.id, upload),
+    ).toBe(true);
+  });
+
+  test('should confirm the user due to emitted event', async () => {
     // when
-    await userFacade.confirmVerification(AnakinSkywalker.id);
+    // emit event
     // then
-    expect(await userFacade.getById(AnakinSkywalker.id)).toMatchObject({
-      isVerified: true,
-    });
+    expect(
+      await userFacade.verify({ id: AnakinSkywalker.id, isVerified: true }),
+    ).toBeTruthy();
   });
 
   test('should get only the verified users', async () => {
@@ -268,7 +293,9 @@ describe('verification', () => {
     const foundUsers = await userFacade.find({ isVerified: true });
     // then
     expect(foundUsers).toContainEqual(
-      SampleUser.sampleGetUser(AnakinSkywalker),
+      SampleUser.sampleGetUser(
+        Object.assign({}, AnakinSkywalker, { isVerified: true }),
+      ),
     );
     expect(foundUsers).not.toContainEqual(SampleUser.sampleGetUser(AdrianMonk));
     expect(foundUsers).not.toContainEqual(
@@ -355,7 +382,7 @@ describe('update', () => {
     ).rejects.toThrowError('Wrong credentials');
   });
 
-  test('should update the firstname', async () => {
+  test('should update the first name', async () => {
     // given
     AnakinSkywalker.firstName = 'Darth';
     // when
@@ -367,7 +394,7 @@ describe('update', () => {
     });
   });
 
-  test('should update the lastname', async () => {
+  test('should update the last name', async () => {
     // given
     AnakinSkywalker.lastName = 'Vader';
     // when

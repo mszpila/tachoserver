@@ -59,7 +59,8 @@ export class MongoDbUserRepository
     return Promise.resolve(user);
   }
 
-  async findAndUpdate(id: string, user: User): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async update(user: User): Promise<boolean> {
+    this.entityManager.save(user);
+    return Promise.resolve(true);
   }
 }

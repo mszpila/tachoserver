@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Uuid } from '../../shared/domain/Uuid';
 import { FindDto } from './dto/FindDto';
 import { LoginDto } from './dto/LoginDto';
@@ -8,24 +9,27 @@ import { UserRepository } from './IUserRepository';
 import { User } from './User';
 import { UserEmail } from './UserEmail';
 import { UserName, UserNameTypes } from './UserName';
-import { UserPasswordCreator, UserPassword } from './UserPassword';
+import { UserPassword } from './UserPassword';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { UploadDocumentDto } from './dto/UploadDocumentDto';
 
 export class UserFacade {
   constructor(
     private userRepository: UserRepository,
     private userQueryRepository: UserQueryRepository,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async register(userDto: UserDto): Promise<boolean> {
-    const firstName = new UserName(userDto.firstName, UserNameTypes.FIRST);
-    const lastName = new UserName(userDto.lastName, UserNameTypes.LAST);
-    const email = new UserEmail(userDto.email);
-    const password = await new UserPasswordCreator().createUserPassword(
-      userDto.password,
-    );
-    const id = new Uuid(userDto.id);
-
-    const user: User = new User(id, firstName, lastName, email, password);
+    const { id, firstName, lastName, email, password } = userDto;
+    const user: User = (
+      await User.builder()
+        .id(id)
+        .firstName(firstName)
+        .lastName(lastName)
+        .email(email)
+        .password(password)
+    ).build();
 
     return await this.userRepository.save(user);
   }
@@ -84,13 +88,6 @@ export class UserFacade {
     return usersArray;
   }
 
-  async submitVerification(id: string): Promise<any> {
-    //
-  }
-  async confirmVerification(id: string): Promise<any> {
-    //
-  }
-
   async login(login: LoginDto): Promise<boolean> {
     const foundUser = await this.userQueryRepository.findByEmail(login.email);
     return await UserPassword.comparePassword(
@@ -101,40 +98,54 @@ export class UserFacade {
 
   async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {
     const user = await this.userQueryRepository.findById(id);
+    for (const prop of Object.keys(userUpdateDto)) {
+      await user[`set${prop.charAt(0).toUpperCase() + prop.slice(1)}`](
+        userUpdateDto[prop],
+      );
+    }
 
-    const updatedUser = userUpdateDto.password
-      ? user.update(
-          new Uuid(id),
-          new UserName(
-            userUpdateDto.firstName || user.toDto().firstName,
-            UserNameTypes.FIRST,
-          ),
-          new UserName(
-            userUpdateDto.lastName || user.toDto().lastName,
-            UserNameTypes.LAST,
-          ),
-          new UserEmail(userUpdateDto.email || user.toDto().email),
-          await new UserPasswordCreator().createUserPassword(
-            userUpdateDto.password,
-          ),
-        )
-      : user.update(
-          new Uuid(id),
-          new UserName(
-            userUpdateDto.firstName || user.toDto().firstName,
-            UserNameTypes.FIRST,
-          ),
-          new UserName(
-            userUpdateDto.lastName || user.toDto().lastName,
-            UserNameTypes.LAST,
-          ),
-          new UserEmail(userUpdateDto.email || user.toDto().email),
-        );
-
-    return await this.userRepository.findAndUpdate(id, updatedUser);
+    return await this.userRepository.update(user);
   }
 
   async deleteById(id: string): Promise<boolean> {
     return await this.userRepository.delete(id);
+  }
+
+  async submitVerification(
+    id: string,
+    upload: UploadDocumentDto,
+  ): Promise<boolean> {
+    const user = await this.userQueryRepository.findById(id);
+    const isVerified = user.toDto().isVerified;
+    if (isVerified) {
+      throw new BadRequestException('User already verified');
+    }
+    return this.eventEmitter.emit(
+      'verification request',
+      {
+        userId: id,
+        frontUrl: upload.frontUrl,
+        backUrl: upload.backUrl,
+        selfieUrl: upload.selfieUrl,
+      },
+      console.log('working'),
+    );
+  }
+
+  @OnEvent('user verified', { async: true })
+  async verify(payload: any): Promise<boolean> {
+    const user = await this.userQueryRepository.findById(payload.id);
+    user.setIsVerified(payload.isVerified);
+    return await this.userRepository.update(user);
+  }
+
+  async confirmEmail(id: string, isEmailVerified: boolean): Promise<boolean> {
+    const user = await this.userQueryRepository.findById(id);
+    user.setIsEmailVerified(isEmailVerified);
+    return this.userRepository.update(user);
+  }
+
+  async uploadProfileImage(): Promise<any> {
+    //
   }
 }
