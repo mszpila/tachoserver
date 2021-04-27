@@ -29,7 +29,13 @@ export class UserPassword {
 }
 
 export class UserPasswordCreator {
-  async password(password: string): Promise<UserPassword> {
+  async withPassword(
+    password: string,
+    alreadyHashed = false,
+  ): Promise<UserPassword> {
+    if (alreadyHashed) {
+      return new UserPassword(password);
+    }
     if (UserPasswordCreator.isValidPassword(password)) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);

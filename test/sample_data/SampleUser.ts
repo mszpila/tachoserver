@@ -7,22 +7,22 @@ export class SampleUser {
   static sampleNewUser(properties = {}): UserDto {
     const sample = Object.assign({}, SAMPLE_NEW_USER_MAP, properties);
     return UserDto.builder()
-      .id(sample.id as string)
-      .firstName(sample.firstName as string)
-      .lastName(sample.lastName as string)
-      .email(sample.email as string)
-      .password(sample.password as string)
-      .isVerified(sample.isVerified as boolean)
+      .withId(sample.id as string)
+      .withFirstName(sample.firstName as string)
+      .withLastName(sample.lastName as string)
+      .withEmail(sample.email as string)
+      .withPassword(sample.password as string)
+      .withIsVerified(sample.isVerified as boolean)
       .build();
   }
 
   static sampleGetUser(user: UserDto): UserDto {
     return UserDto.builder()
-      .id(user.id)
-      .firstName(user.firstName)
-      .lastName(user.lastName)
-      .email(user.email)
-      .isVerified(user.isVerified)
+      .withId(user.id)
+      .withFirstName(user.firstName)
+      .withLastName(user.lastName)
+      .withEmail(user.email)
+      .withIsVerified(user.isVerified)
       .build();
   }
 }

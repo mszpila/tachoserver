@@ -12,12 +12,15 @@ import { UserName, UserNameTypes } from './UserName';
 import { UserPassword } from './UserPassword';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UploadDocumentDto } from './dto/UploadDocumentDto';
+import { UserBuilder } from './UserBuilder';
+import { UserUpdater } from './UserUpdater';
 
 export class UserFacade {
   constructor(
     private userRepository: UserRepository,
     private userQueryRepository: UserQueryRepository,
     private eventEmitter: EventEmitter2,
+    private updater: UserUpdater,
   ) {}
 
   async register(userDto: UserDto): Promise<boolean> {
@@ -38,11 +41,11 @@ export class UserFacade {
     const user = await this.userQueryRepository.findById(id);
     const userDto = user.toDto();
     return UserDto.builder()
-      .id(userDto.id)
-      .firstName(userDto.firstName)
-      .lastName(userDto.lastName)
-      .email(userDto.email)
-      .isVerified(userDto.isVerified)
+      .withId(userDto.id)
+      .withFirstName(userDto.firstName)
+      .withLastName(userDto.lastName)
+      .withEmail(userDto.email)
+      .withIsVerified(userDto.isVerified)
       .build();
   }
 
@@ -77,11 +80,11 @@ export class UserFacade {
       const userDto = user.toDto();
       usersArray.push(
         UserDto.builder()
-          .id(userDto.id)
-          .firstName(userDto.firstName)
-          .lastName(userDto.lastName)
-          .email(userDto.email)
-          .isVerified(userDto.isVerified)
+          .withId(userDto.id)
+          .withFirstName(userDto.firstName)
+          .withLastName(userDto.lastName)
+          .withEmail(userDto.email)
+          .withIsVerified(userDto.isVerified)
           .build(),
       );
     }
@@ -96,15 +99,33 @@ export class UserFacade {
     );
   }
 
-  async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {
-    const user = await this.userQueryRepository.findById(id);
-    for (const prop of Object.keys(userUpdateDto)) {
-      await user[`set${prop.charAt(0).toUpperCase() + prop.slice(1)}`](
-        userUpdateDto[prop],
-      );
-    }
+  async update(id: string, userUpdateDto: UserUpdateDto): Promise<void> {
+    // const user = await this.userQueryRepository.findById(id);
+    // for (const prop of Object.keys(userUpdateDto)) {
+    // await user[`set${prop.charAt(0).toUpperCase() + prop.slice(1)}`](
+    //   userUpdateDto[prop],
+    // );
+    // }
 
-    return await this.userRepository.update(user);
+    // let builder;
+    // if (userUpdateDto.firstName) {
+    //   builder = (await user.toBuilder()).withFirstName(userUpdateDto.firstName);
+    // }
+    // if (userUpdateDto.lastName) {
+    //   builder = (await user.toBuilder()).withLastName(userUpdateDto.lastName);
+    // }
+    // if (userUpdateDto.email) {
+    //   builder = (await user.toBuilder()).withEmail(userUpdateDto.email);
+    // }
+    // if (userUpdateDto.password) {
+    //   builder = await (await user.toBuilder()).withPassword(
+    //     userUpdateDto.password,
+    //   );
+    // }
+
+    await this.updater.execute(id, userUpdateDto);
+    // return await this.userRepository.update(await builder.build());
+    // return await this.userRepository.update(user);
   }
 
   async deleteById(id: string): Promise<boolean> {
@@ -135,14 +156,20 @@ export class UserFacade {
   @OnEvent('user verified', { async: true })
   async verify(payload: any): Promise<boolean> {
     const user = await this.userQueryRepository.findById(payload.id);
-    user.setIsVerified(payload.isVerified);
-    return await this.userRepository.update(user);
+    // user.setIsVerified(payload.isVerified);
+    // return this.userRepository.update(user);
+    return await this.userRepository.update(
+      (await user.toBuilder()).withIsVerified(payload.isVerified).build(),
+    );
   }
 
   async confirmEmail(id: string, isEmailVerified: boolean): Promise<boolean> {
     const user = await this.userQueryRepository.findById(id);
-    user.setIsEmailVerified(isEmailVerified);
-    return this.userRepository.update(user);
+    // user.setIsEmailVerified(isEmailVerified);
+    // return this.userRepository.update(user);
+    return this.userRepository.update(
+      (await user.toBuilder()).withIsEmailVerified(isEmailVerified).build(),
+    );
   }
 
   async uploadProfileImage(): Promise<any> {

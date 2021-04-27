@@ -39,8 +39,14 @@ export class UserBuilder {
     return this;
   }
 
-  async withPassword(password: string): Promise<UserBuilder> {
-    this.password = await UserPassword.builder().password(password);
+  async withPassword(
+    password: string,
+    alreadyHashed = false,
+  ): Promise<UserBuilder> {
+    this.password = await UserPassword.builder().withPassword(
+      password,
+      alreadyHashed,
+    );
     return this;
   }
 
@@ -70,18 +76,6 @@ export class UserBuilder {
   }
 
   build(): User {
-    return new User(
-      this,
-      // this.id,
-      // this.firstName,
-      // this.lastName,
-      // this.email,
-      // this.password,
-      // this.isVerified,
-      // this.isEmailVerified,
-      // this.userRoles,
-      // this.isBanned,
-      // this.isDeleted,
-    );
+    return new User(this);
   }
 }

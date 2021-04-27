@@ -58,19 +58,7 @@ export class User {
   // @AutoMap({ typeFn: () => Date })
   private lastActive: Date;
 
-  constructor(
-    // id: Uuid,
-    // firstName: UserName,
-    // lastName: UserName,
-    // email: UserEmail,
-    // password: UserPassword,
-    // isVerified: boolean,
-    // isEmailVerified: boolean,
-    // userRoles: UserRoles[],
-    // isBanned: boolean,
-    // isDeleted: boolean,
-    builder: UserBuilder,
-  ) {
+  constructor(builder: UserBuilder) {
     this.id = builder.id;
     this.firstName = builder.firstName;
     this.lastName = builder.lastName;
@@ -88,40 +76,54 @@ export class User {
 
   toDto(): UserDto {
     return UserDto.builder()
-      .id(this.id.toString())
-      .firstName(this.firstName.toString())
-      .lastName(this.lastName.toString())
-      .email(this.email.toString())
-      .password(this.password.toString())
-      .isVerified(this.isVerified)
+      .withId(this.id.toString())
+      .withFirstName(this.firstName.toString())
+      .withLastName(this.lastName.toString())
+      .withEmail(this.email.toString())
+      .withPassword(this.password.toString())
+      .withIsVerified(this.isVerified)
       .build();
+  }
+
+  async toBuilder(): Promise<UserBuilder> {
+    return User.builder()
+      .withId(this.id.toString())
+      .withFirstName(this.firstName.toString())
+      .withLastName(this.lastName.toString())
+      .withEmail(this.email.toString())
+      .withIsVerified(this.isVerified)
+      .withIsVerified(this.isVerified)
+      .withUserRoles(this.userRoles)
+      .withIsBanned(this.isBanned)
+      .withIsDeleted(this.isDeleted)
+      .withPassword(this.password.toString(), true);
   }
 
   static builder(): UserBuilder {
     return new UserBuilder();
   }
 
-  setFirstName(firstName: string) {
-    this.firstName = new UserName(firstName, UserNameTypes.FIRST);
-  }
+  // setFirstName(firstName: string) {
+  //   this.firstName = new UserName(firstName, UserNameTypes.FIRST);
+  // }
 
-  setLastName(lastName: string) {
-    this.lastName = new UserName(lastName, UserNameTypes.LAST);
-  }
+  // setLastName(lastName: string) {
+  //   this.lastName = new UserName(lastName, UserNameTypes.LAST);
+  // }
 
-  setEmail(email: string) {
-    this.email = new UserEmail(email);
-  }
+  // setEmail(email: string) {
+  //   this.email = new UserEmail(email);
+  // }
 
-  setIsVerified(isVerified: boolean) {
-    this.isVerified = isVerified;
-  }
+  // setIsVerified(isVerified: boolean) {
+  //   this.isVerified = isVerified;
+  // }
 
-  setIsEmailVerified(isEmailVerified: boolean) {
-    this.isEmailVerified = isEmailVerified;
-  }
+  // setIsEmailVerified(isEmailVerified: boolean) {
+  //   this.isEmailVerified = isEmailVerified;
+  // }
 
-  async setPassword(password: string) {
-    this.password = await UserPassword.builder().password(password);
-  }
+  // async setPassword(password: string) {
+  //   this.password = await UserPassword.builder().withPassword(password);
+  // }
 }

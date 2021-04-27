@@ -19,64 +19,68 @@ export class UserDto {
   @AutoMap()
   public isVerified: boolean;
 
+  constructor(builder: UserDtoBuilder) {
+    this.id = builder.id;
+    this.firstName = builder.firstName;
+    this.lastName = builder.lastName;
+    this.email = builder.email;
+    this.password = builder.password;
+    this.isVerified = builder.isVerified;
+  }
+
   static builder(): UserDtoBuilder {
     return new UserDtoBuilder();
   }
 }
 
 export class UserDtoBuilder {
-  private _id: string;
-  private _firstName: string;
-  private _lastName: string;
-  private _email: string;
-  private _password: string;
-  private _isVerified: boolean;
+  public id: string;
+  public firstName: string;
+  public lastName: string;
+  public email: string;
+  public password: string;
+  public isVerified: boolean;
 
-  id(id: string): UserDtoBuilder {
-    this._id = id;
+  withId(id: string): UserDtoBuilder {
+    this.id = id;
     return this;
   }
 
-  firstName(firstName: string): UserDtoBuilder {
-    this._firstName = firstName;
+  withFirstName(firstName: string): UserDtoBuilder {
+    this.firstName = firstName;
     return this;
   }
 
-  lastName(lastName: string): UserDtoBuilder {
-    this._lastName = lastName;
+  withLastName(lastName: string): UserDtoBuilder {
+    this.lastName = lastName;
     return this;
   }
 
-  email(email: string): UserDtoBuilder {
-    this._email = email;
+  withEmail(email: string): UserDtoBuilder {
+    this.email = email;
     return this;
   }
 
-  password(password: string): UserDtoBuilder {
-    this._password = password;
+  withPassword(password: string): UserDtoBuilder {
+    this.password = password;
     return this;
   }
 
-  isVerified(isVerified: boolean): UserDtoBuilder {
-    this._isVerified = isVerified;
+  withIsVerified(isVerified: boolean): UserDtoBuilder {
+    this.isVerified = isVerified;
     return this;
   }
 
   build(): UserDto {
     // implement the Mapper!
-    const userDto = new UserDto();
-    const keys = Object.keys(this);
-    keys.forEach((key) => {
-      if (key) {
-        userDto[key.replace(/_/g, '')] = this[key];
-      }
-    });
-
-    // userDto.id = this._id;
-    // userDto.firstName = this._firstName;
-    // userDto.lastName = this._lastName;
-    // userDto.email = this._email;
-    // userDto.password = this._password;
-    return userDto;
+    return new UserDto(this);
+    // const userDto = new UserDto();
+    // const keys = Object.keys(this);
+    // keys.forEach((key) => {
+    //   if (key) {
+    //     userDto[key] = this[key];
+    //   }
+    // });
+    // return userDto;
   }
 }

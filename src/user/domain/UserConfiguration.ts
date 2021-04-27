@@ -4,6 +4,7 @@ import { UserRepository } from './IUserRepository';
 import { UserFacade } from './UserFacade';
 // import { UserFactory } from './UserFactory';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserUpdater } from './UserUpdater';
 
 export class UserConfiguration {
   userFacade(
@@ -19,6 +20,12 @@ export class UserConfiguration {
     if (!eventEmitter) {
       eventEmitter = new EventEmitter2();
     }
-    return new UserFacade(userRepository, userQueryRepository, eventEmitter);
+    const updater: UserUpdater = new UserUpdater(userRepository);
+    return new UserFacade(
+      userRepository,
+      userQueryRepository,
+      eventEmitter,
+      updater,
+    );
   }
 }
