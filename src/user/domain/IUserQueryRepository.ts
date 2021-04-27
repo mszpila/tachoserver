@@ -1,9 +1,8 @@
 import { FindDto } from './dto/FindDto';
-import { UserDto } from './dto/UserDto';
-import { User } from './User';
+import { GetUserDto } from './dto/GetUserDto';
 
 export interface UserQueryRepository {
   // findById(id: string): Promise<UserDto>;
-  find(query: FindDto): Promise<UserDto[]>;
-  findByEmail(email: string): Promise<UserDto>;
+  find(query: FindDto): Promise<GetUserDto[]>;
+  findByEmail(email: string): Promise<GetUserDto>;
 }
