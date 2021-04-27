@@ -38,7 +38,7 @@ export class UserFacade {
   }
 
   async getById(id: string): Promise<UserDto> {
-    const user = await this.userQueryRepository.findById(id);
+    const user = await this.userRepository.findById(id);
     const userDto = user.toDto();
     return UserDto.builder()
       .withId(userDto.id)
@@ -77,14 +77,14 @@ export class UserFacade {
     const usersArray: UserDto[] = [];
     for (const user of users) {
       // usersArray.push(user.toDto());
-      const userDto = user.toDto();
+      // const userDto = user.toDto();
       usersArray.push(
         UserDto.builder()
-          .withId(userDto.id)
-          .withFirstName(userDto.firstName)
-          .withLastName(userDto.lastName)
-          .withEmail(userDto.email)
-          .withIsVerified(userDto.isVerified)
+          .withId(user.id)
+          .withFirstName(user.firstName)
+          .withLastName(user.lastName)
+          .withEmail(user.email)
+          .withIsVerified(user.isVerified)
           .build(),
       );
     }
@@ -95,7 +95,7 @@ export class UserFacade {
     const foundUser = await this.userQueryRepository.findByEmail(login.email);
     return await UserPassword.comparePassword(
       login.password,
-      foundUser.toDto().password,
+      foundUser.password,
     );
   }
 
@@ -136,7 +136,7 @@ export class UserFacade {
     id: string,
     upload: UploadDocumentDto,
   ): Promise<boolean> {
-    const user = await this.userQueryRepository.findById(id);
+    const user = await this.userRepository.findById(id);
     const isVerified = user.toDto().isVerified;
     if (isVerified) {
       throw new BadRequestException('User already verified');
@@ -155,7 +155,7 @@ export class UserFacade {
 
   @OnEvent('user verified', { async: true })
   async verify(payload: any): Promise<boolean> {
-    const user = await this.userQueryRepository.findById(payload.id);
+    const user = await this.userRepository.findById(payload.id);
     // user.setIsVerified(payload.isVerified);
     // return this.userRepository.update(user);
     return await this.userRepository.update(
@@ -164,7 +164,7 @@ export class UserFacade {
   }
 
   async confirmEmail(id: string, isEmailVerified: boolean): Promise<boolean> {
-    const user = await this.userQueryRepository.findById(id);
+    const user = await this.userRepository.findById(id);
     // user.setIsEmailVerified(isEmailVerified);
     // return this.userRepository.update(user);
     return this.userRepository.update(

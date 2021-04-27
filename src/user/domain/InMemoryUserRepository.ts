@@ -4,6 +4,7 @@ import { UserQueryRepository } from './IUserQueryRepository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FindDto } from './dto/FindDto';
 import { UserUpdateDto } from './dto/UpdateDto';
+import { UserDto } from './dto/UserDto';
 
 interface obj {
   [key: string]: string;
@@ -37,18 +38,18 @@ export class InMemoryUserRepository
     return Promise.resolve(true);
   }
 
-  async find(query: FindDto): Promise<User[]> {
-    const users = this.mapToArray();
+  async find(query: FindDto): Promise<UserDto[]> {
+    const users = this.mapToDtoArray();
     const usersFiltered = this.findFilter(users, query);
     this.findSort(usersFiltered, query);
 
     return await Promise.resolve(this.findSlice(usersFiltered, query));
   }
 
-  async findByEmail(email: string): Promise<User> {
-    const users: User[] = this.mapToArray();
-    const userFound = users.filter((user: User) => {
-      if (user.toDto().email === email) {
+  async findByEmail(email: string): Promise<UserDto> {
+    const users: UserDto[] = this.mapToDtoArray();
+    const userFound = users.filter((user: UserDto) => {
+      if (user.email === email) {
         return true;
       }
     });
@@ -63,7 +64,15 @@ export class InMemoryUserRepository
     return Promise.resolve(true);
   }
 
-  private mapToArray = (): User[] => {
+  private mapToDtoArray = (): UserDto[] => {
+    const users: UserDto[] = [];
+    this.map.forEach((user) => {
+      users.push(user.toDto());
+    });
+    return users;
+  };
+
+  private mapToEntityArray = (): User[] => {
     const users: User[] = [];
     this.map.forEach((user) => {
       users.push(user);
@@ -71,15 +80,15 @@ export class InMemoryUserRepository
     return users;
   };
 
-  private findFilter = (users: User[], query: FindDto): User[] => {
-    return users.filter((user: User) => {
+  private findFilter = (users: UserDto[], query: FindDto): UserDto[] => {
+    return users.filter((user: UserDto) => {
       if (
-        user.toDto().firstName.toLocaleLowerCase().includes(query.name) ||
-        user.toDto().lastName.toLocaleLowerCase().includes(query.name)
+        user.firstName.toLocaleLowerCase().includes(query.name) ||
+        user.lastName.toLocaleLowerCase().includes(query.name)
       ) {
-        if (query.isVerified && user.toDto().isVerified) {
+        if (query.isVerified && user.isVerified) {
           return true;
-        } else if (query.isVerified && !user.toDto().isVerified) {
+        } else if (query.isVerified && !user.isVerified) {
           return false;
         }
         return true;
@@ -87,25 +96,20 @@ export class InMemoryUserRepository
     });
   };
 
-  private findSort = (users: User[], query: FindDto): User[] => {
-    return users.sort((a: User, b: User) => {
+  private findSort = (users: UserDto[], query: FindDto): UserDto[] => {
+    return users.sort((a: UserDto, b: UserDto) => {
       const key: string = Object.getOwnPropertyNames(query.sort)[0];
-      const result =
-        a.toDto()[key] < b.toDto()[key]
-          ? -1
-          : a.toDto()[key] > b.toDto()[key]
-          ? 1
-          : 0;
+      const result = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
       return result * query.sort[key];
     });
   };
 
-  private findSlice = (users: User[], query: FindDto): User[] => {
+  private findSlice = (users: UserDto[], query: FindDto): UserDto[] => {
     return users.slice(query.offset, query.offset + query.limit);
   };
 
   private alreadyExists = (email: string): boolean => {
-    const users = this.mapToArray();
+    const users = this.mapToEntityArray();
     return users.some((user: User) => {
       if (user.toDto().email === email) {
         return true;
