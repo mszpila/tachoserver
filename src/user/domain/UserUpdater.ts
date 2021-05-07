@@ -1,6 +1,5 @@
 import { UserUpdateDto } from './dto/UpdateDto';
 import { UserRepository } from './IUserRepository';
-import { User } from './User';
 import { UserBuilder } from './UserBuilder';
 
 export class UserUpdater {
@@ -8,7 +7,7 @@ export class UserUpdater {
 
   constructor(private userRepository: UserRepository) {}
 
-  async execute(id: string, userUpdateDto: UserUpdateDto) {
+  async execute(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {
     const user = await this.userRepository.findById(id);
     if (userUpdateDto.firstName) {
       this.toUpdate = (await user.toBuilder()).withFirstName(
@@ -28,6 +27,6 @@ export class UserUpdater {
         userUpdateDto.password,
       );
     }
-    return await this.userRepository.update(await this.toUpdate.build());
+    return await this.userRepository.update((await this.toUpdate).build());
   }
 }

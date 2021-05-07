@@ -39,20 +39,16 @@ export class InMemoryUserRepository
   }
 
   async find(query: FindDto): Promise<UserDto[]> {
-    const users = this.mapToDtoArray();
+    const users = this.mapToArray();
     const usersFiltered = this.findFilter(users, query);
     this.findSort(usersFiltered, query);
 
     return await Promise.resolve(this.findSlice(usersFiltered, query));
   }
 
-  async findByEmail(email: string): Promise<UserDto> {
-    const users: UserDto[] = this.mapToDtoArray();
-    const userFound = users.filter((user: UserDto) => {
-      if (user.email === email) {
-        return true;
-      }
-    });
+  async findByEmailToComparePassowrd(email: string): Promise<UserDto> {
+    const users: UserDto[] = this.mapToArray();
+    const userFound = users.filter((user: UserDto) => user.email === email);
     if (!userFound[0]) {
       throw new NotFoundException('Wrong credentials');
     }
@@ -64,7 +60,7 @@ export class InMemoryUserRepository
     return Promise.resolve(true);
   }
 
-  private mapToDtoArray = (): UserDto[] => {
+  private mapToArray = (): UserDto[] => {
     const users: UserDto[] = [];
     this.map.forEach((user) => {
       users.push(user.toDto());

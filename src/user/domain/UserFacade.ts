@@ -92,7 +92,9 @@ export class UserFacade {
   }
 
   async login(login: LoginDto): Promise<boolean> {
-    const foundUser = await this.userQueryRepository.findByEmail(login.email);
+    const foundUser = await this.userQueryRepository.findByEmailToComparePassowrd(
+      login.email,
+    );
     return await UserPassword.comparePassword(
       login.password,
       foundUser.password,
