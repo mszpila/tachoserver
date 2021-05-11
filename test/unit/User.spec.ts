@@ -11,6 +11,8 @@ import {
   USER_VERIFIED,
   VERIFICATION_REQUESTED,
 } from '../../src/shared/infrastructure/events/EventTopic';
+import { FindUserDto } from '../../src/user/domain/dto/FindUserDto';
+import { UserUpdateDto } from '../../src/user/domain/dto/UserUpdateDto';
 
 const eventEmitterSingleton = new EventEmitter2();
 const eventDomainPublisher = new UserDomainEventNativePublisher(
@@ -23,7 +25,7 @@ new UserDomainEventNativeListener(userFacade, eventEmitterSingleton);
 
 // create a user
 const JohnMarston: UserDto = SampleUser.sampleNewUser();
-const AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
+let AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
   id: '15605809-1557-49fe-a58d-c861d2291689',
   firstName: 'Anakin',
   lastName: 'Skywalker',
@@ -191,9 +193,8 @@ describe('get', () => {
 
   test('should get the all users (defaultly) sorted first name asc', async () => {
     // when
-    const foundUsers = await userFacade.find({});
+    const foundUsers = await userFacade.find(FindUserDto.builder().build());
     // then
-    console.log(foundUsers);
     expect(foundUsers[2]).toEqual(SampleUser.sampleGetUser(JohnMarston));
     expect(foundUsers[1]).toEqual(SampleUser.sampleGetUser(AnakinSkywalker));
     expect(foundUsers[0]).toEqual(SampleUser.sampleGetUser(AdrianMonk));
@@ -201,7 +202,9 @@ describe('get', () => {
 
   test('should get the sorted first name desc users list', async () => {
     // when
-    const foundUsers = await userFacade.find({ sort: 'fnd' });
+    const foundUsers = await userFacade.find(
+      FindUserDto.builder().withSort('fnd').build(),
+    );
     // then
     expect(foundUsers[0]).toEqual(SampleUser.sampleGetUser(JohnMarston));
     expect(foundUsers[1]).toEqual(SampleUser.sampleGetUser(AnakinSkywalker));
@@ -210,7 +213,9 @@ describe('get', () => {
 
   test('should get only the first user on the list', async () => {
     // when
-    const foundUsers = await userFacade.find({ limit: 1 });
+    const foundUsers = await userFacade.find(
+      FindUserDto.builder().withLimit(1).build(),
+    );
     // then
     expect(foundUsers).toContainEqual(SampleUser.sampleGetUser(AdrianMonk));
     expect(foundUsers).not.toContainEqual(
@@ -223,7 +228,9 @@ describe('get', () => {
 
   test('should get the users from the second user on the list', async () => {
     // when
-    const foundUsers = await userFacade.find({ offset: 1 });
+    const foundUsers = await userFacade.find(
+      FindUserDto.builder().withOffset(1).build(),
+    );
     // then
     expect(foundUsers).not.toContainEqual(SampleUser.sampleGetUser(AdrianMonk));
     expect(foundUsers).toContainEqual(
@@ -234,7 +241,10 @@ describe('get', () => {
 
   test('should get only the users with "an" in the name on the list', async () => {
     // when
-    const foundUsers = await userFacade.find({ sort: 'fnd', name: 'an' });
+    const foundUsers = await userFacade.find(
+      FindUserDto.builder().withSort('fnd').withName('an').build(),
+    );
+
     // then
     expect(foundUsers).not.toContainEqual(
       SampleUser.sampleGetUser(JohnMarston),
@@ -277,10 +287,10 @@ describe('events', () => {
   test('should emit verification request', async () => {
     // given verification submission
     const publishMock = jest.spyOn(eventDomainPublisher, 'publish');
-    const upload = new UploadDocumentDto();
-    upload.frontUrl = 'http://localhost.com/frontImg';
-    upload.backUrl = 'http://localhost.com/backImg';
-    upload.selfieUrl = 'http://localhost.com/selfieImg';
+    const frontUrl = 'http://localhost.com/frontImg';
+    const backUrl = 'http://localhost.com/backImg';
+    const selfieUrl = 'http://localhost.com/selfieImg';
+    const upload = new UploadDocumentDto(frontUrl, backUrl, selfieUrl);
 
     // when user send verification request
     await userFacade.submitVerification(AnakinSkywalker.id, upload);
@@ -312,7 +322,9 @@ describe('events', () => {
 
   test('should get only the verified users', async () => {
     // when
-    const foundUsers = await userFacade.find({ isVerified: true });
+    const foundUsers = await userFacade.find(
+      FindUserDto.builder().withVerified(true).build(),
+    );
     // then
     expect(foundUsers).toContainEqual(
       SampleUser.sampleGetUser({ ...AnakinSkywalker, isVerified: true }),
@@ -357,11 +369,14 @@ describe('update', () => {
   test('should update the password', async () => {
     // given
     const prevPassword = AnakinSkywalker.password;
-    AnakinSkywalker.password = '^>3HkMVZ';
+    AnakinSkywalker = { ...AnakinSkywalker, password: '^>3HkMVZ' };
+    const updateDto: UserUpdateDto = UserUpdateDto.builder()
+      .withPassword(AnakinSkywalker.password)
+      .build();
+
     // when
-    await userFacade.update(AnakinSkywalker.id, {
-      password: AnakinSkywalker.password,
-    });
+    await userFacade.update(AnakinSkywalker.id, updateDto);
+
     // then
     expect(
       await userFacade.login({
@@ -381,11 +396,14 @@ describe('update', () => {
   test('should update the email', async () => {
     // given
     const prevEmail = AnakinSkywalker.email;
-    AnakinSkywalker.email = 'a.skywalker@gmail.com';
+    AnakinSkywalker = { ...AnakinSkywalker, email: 'a.skywalker@gmail.com' };
+    const updateDto: UserUpdateDto = UserUpdateDto.builder()
+      .withEmail(AnakinSkywalker.email)
+      .build();
+
     // when
-    await userFacade.update(AnakinSkywalker.id, {
-      email: AnakinSkywalker.email,
-    });
+    await userFacade.update(AnakinSkywalker.id, updateDto);
+
     // then
     expect(
       await userFacade.login({
@@ -404,11 +422,15 @@ describe('update', () => {
 
   test('should update the first name', async () => {
     // given
-    AnakinSkywalker.firstName = 'Darth';
+    AnakinSkywalker = { ...AnakinSkywalker, firstName: 'Darth' };
+    const updateDto: UserUpdateDto = UserUpdateDto.builder()
+      .withFirstName(AnakinSkywalker.firstName)
+      .build();
+
     // when
-    await userFacade.update(AnakinSkywalker.id, {
-      firstName: AnakinSkywalker.firstName,
-    });
+    await userFacade.update(AnakinSkywalker.id, updateDto);
+
+    // then
     expect(await userFacade.getById(AnakinSkywalker.id)).toMatchObject({
       firstName: AnakinSkywalker.firstName,
     });
@@ -416,11 +438,15 @@ describe('update', () => {
 
   test('should update the last name', async () => {
     // given
-    AnakinSkywalker.lastName = 'Vader';
+    AnakinSkywalker = { ...AnakinSkywalker, lastName: 'Vader' };
+    const updateDto: UserUpdateDto = UserUpdateDto.builder()
+      .withLastName(AnakinSkywalker.lastName)
+      .build();
+
     // when
-    await userFacade.update(AnakinSkywalker.id, {
-      lastName: AnakinSkywalker.lastName,
-    });
+    await userFacade.update(AnakinSkywalker.id, updateDto);
+
+    // then
     expect(await userFacade.getById(AnakinSkywalker.id)).toMatchObject({
       lastName: AnakinSkywalker.lastName,
     });

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { getMongoManager, Like } from 'typeorm';
-import { FindDto } from '../dto/FindDto';
+import { FindUserDto } from '../dto/FindUserDto';
 import { PassowrdCompareDto } from '../dto/PasswordCompareDto';
 import { UserDto } from '../dto/UserDto';
 import { UserQueryRepository } from '../IUserQueryRepository';
@@ -44,7 +44,7 @@ export class MongoDbUserRepository
     return Promise.resolve(true);
   }
 
-  async find(query: FindDto): Promise<UserDto[]> {
+  async find(query: FindUserDto): Promise<UserDto[]> {
     const foundUsers: User[] = await this.entityManager.find(User, {
       where: {
         firstName: Like(`%${query.name}`),

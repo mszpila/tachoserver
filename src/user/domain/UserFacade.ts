@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FindDto } from './dto/FindDto';
+import { FindUserDto } from './dto/FindUserDto';
 import { LoginDto } from './dto/LoginDto';
-import { UserUpdateDto } from './dto/UpdateDto';
+import { UserUpdateDto } from './dto/UserUpdateDto';
 import { UserDto } from './dto/UserDto';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
@@ -30,33 +30,33 @@ export class UserFacade {
     return await this.userRepository.save(user);
   }
 
-  async getById(id: string): Promise<UserDto> {
+  async getById(id: string): Promise<GetUserDto> {
     const user = await this.userRepository.findById(id);
     const userDto = user.toDto();
-    return UserDto.builder()
-      .withId(userDto.id)
-      .withFirstName(userDto.firstName)
-      .withLastName(userDto.lastName)
-      .withEmail(userDto.email)
-      .withIsVerified(userDto.isVerified)
-      .build();
+    return new GetUserDto(
+      userDto.id,
+      userDto.firstName,
+      userDto.lastName,
+      userDto.email,
+      userDto.isVerified,
+    );
   }
 
-  async find(query: FindDto): Promise<GetUserDto[]> {
-    query.name = query.name ? query.name.toLowerCase() : '';
-    query.offset = query.offset || 0;
-    query.limit = query.limit || 20;
+  async find(query: FindUserDto): Promise<GetUserDto[]> {
+    // query.name = query.name ? query.name.toLowerCase() : '';
+    // query.offset = query.offset || 0;
+    // query.limit = query.limit || 20;
     const users = await this.userQueryRepository.find(query);
-    const usersArray: UserDto[] = [];
+    const usersArray: GetUserDto[] = [];
     for (const user of users) {
       usersArray.push(
-        UserDto.builder()
-          .withId(user.id)
-          .withFirstName(user.firstName)
-          .withLastName(user.lastName)
-          .withEmail(user.email)
-          .withIsVerified(user.isVerified)
-          .build(),
+        new GetUserDto(
+          user.id,
+          user.firstName,
+          user.lastName,
+          user.email,
+          user.isVerified,
+        ),
       );
     }
     return usersArray;

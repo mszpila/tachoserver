@@ -2,7 +2,7 @@ import { User } from './User';
 import { UserRepository } from './IUserRepository';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { FindDto } from './dto/FindDto';
+import { FindUserDto } from './dto/FindUserDto';
 // import { UserUpdateDto } from './dto/UpdateDto';
 import { UserDto } from './dto/UserDto';
 import { PassowrdCompareDto } from './dto/PasswordCompareDto';
@@ -39,7 +39,7 @@ export class InMemoryUserRepository
     return Promise.resolve(true);
   }
 
-  async find(query: FindDto): Promise<UserDto[]> {
+  async find(query: FindUserDto): Promise<UserDto[]> {
     const users = this.mapToArray();
     const usersFiltered = this.findFilter(users, query);
     this.findSort(usersFiltered, query);
@@ -55,7 +55,7 @@ export class InMemoryUserRepository
     if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return Promise.resolve(userFound);
+    return Promise.resolve({ password: userFound.password });
   }
 
   async update(user: User): Promise<boolean> {
@@ -79,7 +79,7 @@ export class InMemoryUserRepository
     return users;
   };
 
-  private findFilter = (users: UserDto[], query: FindDto): UserDto[] => {
+  private findFilter = (users: UserDto[], query: FindUserDto): UserDto[] => {
     return users.filter((user: UserDto) => {
       if (
         user.firstName.toLowerCase().includes(query.name) ||
@@ -91,7 +91,7 @@ export class InMemoryUserRepository
     });
   };
 
-  private findSort = (users: UserDto[], query: FindDto): UserDto[] => {
+  private findSort = (users: UserDto[], query: FindUserDto): UserDto[] => {
     switch (query.sort) {
       case 'fnd':
         return users
@@ -116,7 +116,7 @@ export class InMemoryUserRepository
     }
   };
 
-  private findSlice = (users: UserDto[], query: FindDto): UserDto[] => {
+  private findSlice = (users: UserDto[], query: FindUserDto): UserDto[] => {
     return users.slice(query.offset, query.offset + query.limit);
   };
 

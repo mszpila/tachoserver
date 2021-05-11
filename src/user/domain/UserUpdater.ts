@@ -1,4 +1,4 @@
-import { UserUpdateDto } from './dto/UpdateDto';
+import { UserUpdateDto } from './dto/UserUpdateDto';
 import { UserRepository } from './IUserRepository';
 import { UserEmail } from './UserEmail';
 import { UserName, UserNameTypes } from './UserName';

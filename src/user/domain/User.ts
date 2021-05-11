@@ -72,14 +72,22 @@ export class User {
   }
 
   toDto(): UserDto {
-    return UserDto.builder()
-      .withId(this.id.toString())
-      .withFirstName(this.firstName.toString())
-      .withLastName(this.lastName.toString())
-      .withEmail(this.email.toString())
-      .withPassword(this.password.toString())
-      .withIsVerified(this.isVerified)
-      .build();
+    return new UserDto(
+      this.id.toString(),
+      this.firstName.toString(),
+      this.lastName.toString(),
+      this.email.toString(),
+      this.password.toString(),
+      this.isVerified,
+    );
+    // return UserDto.builder()
+    //   .withId(this.id.toString())
+    //   .withFirstName(this.firstName.toString())
+    //   .withLastName(this.lastName.toString())
+    //   .withEmail(this.email.toString())
+    //   .withPassword(this.password.toString())
+    //   .withIsVerified(this.isVerified)
+    //   .build();
   }
 
   setFirstName(firstName: UserName): void {
