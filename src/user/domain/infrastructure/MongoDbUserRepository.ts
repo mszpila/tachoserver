@@ -1,11 +1,17 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { getMongoManager, Like } from 'typeorm';
 import { FindDto } from '../dto/FindDto';
+import { PassowrdCompareDto } from '../dto/PasswordCompareDto';
+import { UserDto } from '../dto/UserDto';
 import { UserQueryRepository } from '../IUserQueryRepository';
 import { UserRepository } from '../IUserRepository';
 import { User } from '../User';
 
-// @Injectable()
+@Injectable()
 export class MongoDbUserRepository
   implements UserRepository, UserQueryRepository {
   constructor(private entityManager = getMongoManager()) {}
@@ -38,8 +44,8 @@ export class MongoDbUserRepository
     return Promise.resolve(true);
   }
 
-  async find(query: FindDto): Promise<User[]> {
-    return await this.entityManager.find(User, {
+  async find(query: FindDto): Promise<UserDto[]> {
+    const foundUsers: User[] = await this.entityManager.find(User, {
       where: {
         firstName: Like(`%${query.name}`),
         lastName: Like(`%${query.name}`),
@@ -49,6 +55,11 @@ export class MongoDbUserRepository
       skip: query.offset,
       take: query.limit,
     });
+    return foundUsers.map((user) => user.toDto());
+  }
+
+  findByEmailToComparePassowrd(email: string): Promise<PassowrdCompareDto> {
+    throw new Error('Method not implemented.');
   }
 
   async findByEmail(email: string): Promise<User> {

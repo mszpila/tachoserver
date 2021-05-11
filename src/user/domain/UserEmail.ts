@@ -26,14 +26,6 @@ export class UserEmail {
     return email.trim().toLowerCase();
   }
 
-  // public static create(email: string): UserEmail {
-  //   if (!this.isValidEmail(email)) {
-  //     throw new BadRequestException('Email address is not valid');
-  //   } else {
-  //     return new UserEmail(this.format(email));
-  //   }
-  // }
-
   toString(): string {
     return this.email;
   }

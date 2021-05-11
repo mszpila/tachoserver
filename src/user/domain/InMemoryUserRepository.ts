@@ -3,12 +3,13 @@ import { UserRepository } from './IUserRepository';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FindDto } from './dto/FindDto';
-import { UserUpdateDto } from './dto/UpdateDto';
+// import { UserUpdateDto } from './dto/UpdateDto';
 import { UserDto } from './dto/UserDto';
+import { PassowrdCompareDto } from './dto/PasswordCompareDto';
 
-interface obj {
-  [key: string]: string;
-}
+// interface obj {
+//   [key: string]: string;
+// }
 
 export class InMemoryUserRepository
   implements UserRepository, UserQueryRepository {
@@ -46,13 +47,15 @@ export class InMemoryUserRepository
     return await Promise.resolve(this.findSlice(usersFiltered, query));
   }
 
-  async findByEmailToComparePassowrd(email: string): Promise<UserDto> {
+  async findByEmailToComparePassowrd(
+    email: string,
+  ): Promise<PassowrdCompareDto> {
     const users: UserDto[] = this.mapToArray();
-    const userFound = users.filter((user: UserDto) => user.email === email);
-    if (!userFound[0]) {
+    const userFound = users.filter((user: UserDto) => user.email === email)[0];
+    if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return Promise.resolve(userFound[0]);
+    return Promise.resolve(userFound);
   }
 
   async update(user: User): Promise<boolean> {
@@ -79,25 +82,38 @@ export class InMemoryUserRepository
   private findFilter = (users: UserDto[], query: FindDto): UserDto[] => {
     return users.filter((user: UserDto) => {
       if (
-        user.firstName.toLocaleLowerCase().includes(query.name) ||
-        user.lastName.toLocaleLowerCase().includes(query.name)
+        user.firstName.toLowerCase().includes(query.name) ||
+        user.lastName.toLowerCase().includes(query.name)
       ) {
-        if (query.isVerified && user.isVerified) {
-          return true;
-        } else if (query.isVerified && !user.isVerified) {
-          return false;
-        }
-        return true;
+        return !query.isVerified || user.isVerified;
       }
+      return false;
     });
   };
 
   private findSort = (users: UserDto[], query: FindDto): UserDto[] => {
-    return users.sort((a: UserDto, b: UserDto) => {
-      const key: string = Object.getOwnPropertyNames(query.sort)[0];
-      const result = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
-      return result * query.sort[key];
-    });
+    switch (query.sort) {
+      case 'fnd':
+        return users
+          .sort((a: UserDto, b: UserDto) =>
+            a.firstName.localeCompare(b.firstName),
+          )
+          .reverse();
+      case 'lna':
+        return users.sort((a: UserDto, b: UserDto) =>
+          a.lastName.localeCompare(b.lastName),
+        );
+      case 'lnd':
+        return users
+          .sort((a: UserDto, b: UserDto) =>
+            a.lastName.localeCompare(b.lastName),
+          )
+          .reverse();
+      default:
+        return users.sort((a: UserDto, b: UserDto) =>
+          a.firstName.localeCompare(b.firstName),
+        );
+    }
   };
 
   private findSlice = (users: UserDto[], query: FindDto): UserDto[] => {
@@ -106,10 +122,6 @@ export class InMemoryUserRepository
 
   private alreadyExists = (email: string): boolean => {
     const users = this.mapToEntityArray();
-    return users.some((user: User) => {
-      if (user.toDto().email === email) {
-        return true;
-      }
-    });
+    return users.some((user: User) => user.toDto().email === email);
   };
 }

@@ -4,7 +4,7 @@ test('should hash the plain password', async () => {
   // given
   const plainPassword = `'6U'y5v(>1',!`;
   // when
-  const hashedPassword = await UserPassword.builder().password(plainPassword);
+  const hashedPassword = await UserPassword.createPassword(plainPassword);
   // then
   expect(hashedPassword.toString()).not.toMatch(plainPassword);
 });

@@ -1,11 +1,25 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserDomainEventNativePublisher } from '../../src/user/domain/infrastructure/UserDomainEventNativePublisher';
+import { DomainEvent } from '../../src/shared/infrastructure/events/DomainEvent';
 import { UploadDocumentDto } from '../../src/user/domain/dto/UploadDocumentDto';
 import { UserDto } from '../../src/user/domain/dto/UserDto';
 import { UserConfiguration } from '../../src/user/domain/UserConfiguration';
 import { UserFacade } from '../../src/user/domain/UserFacade';
 import { SampleUser } from '../sample_data/SampleUser';
-// import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { UserDomainEventNativeListener } from '../../src/user/domain/infrastructure/UserDomainEventNativeListener';
+import {
+  USER_VERIFIED,
+  VERIFICATION_REQUESTED,
+} from '../../src/shared/infrastructure/events/EventTopic';
 
-const userFacade: UserFacade = new UserConfiguration().userFacade();
+const eventEmitterSingleton = new EventEmitter2();
+const eventDomainPublisher = new UserDomainEventNativePublisher(
+  eventEmitterSingleton,
+);
+const userFacade: UserFacade = new UserConfiguration().userFacade(
+  eventDomainPublisher,
+);
+new UserDomainEventNativeListener(userFacade, eventEmitterSingleton);
 
 // create a user
 const JohnMarston: UserDto = SampleUser.sampleNewUser();
@@ -179,6 +193,7 @@ describe('get', () => {
     // when
     const foundUsers = await userFacade.find({});
     // then
+    console.log(foundUsers);
     expect(foundUsers[2]).toEqual(SampleUser.sampleGetUser(JohnMarston));
     expect(foundUsers[1]).toEqual(SampleUser.sampleGetUser(AnakinSkywalker));
     expect(foundUsers[0]).toEqual(SampleUser.sampleGetUser(AdrianMonk));
@@ -259,33 +274,40 @@ describe('upload', () => {
 });
 
 describe('events', () => {
-  // const eventEmitter = new EventEmitter2();
-  // jest.mock('@nestjs/event-emitter');
-
   test('should emit verification request', async () => {
     // given verification submission
+    const publishMock = jest.spyOn(eventDomainPublisher, 'publish');
     const upload = new UploadDocumentDto();
-    // {
-    //   frontUrl: 'http://localhost.com/frontImg',
-    //   backUrl: 'http://localhost.com/backImg',
-    //   selfieUrl: 'http://localhost.com/selfieImg',
-    // };
     upload.frontUrl = 'http://localhost.com/frontImg';
     upload.backUrl = 'http://localhost.com/backImg';
     upload.selfieUrl = 'http://localhost.com/selfieImg';
-    // expect emit event
-    expect(
-      await userFacade.submitVerification(AnakinSkywalker.id, upload),
-    ).toBe(true);
+
+    // when user send verification request
+    await userFacade.submitVerification(AnakinSkywalker.id, upload);
+
+    // then
+    expect(publishMock).toHaveBeenCalledWith(
+      new DomainEvent(VERIFICATION_REQUESTED, {
+        userId: AnakinSkywalker.id,
+        frontUrl: upload.frontUrl,
+        backUrl: upload.backUrl,
+        selfieUrl: upload.selfieUrl,
+      }),
+    );
   });
 
   test('should confirm the user due to emitted event', async () => {
+    // given
+    const payload = {
+      id: AnakinSkywalker.id,
+      isVerified: true,
+    };
     // when
-    // emit event
+    eventDomainPublisher.publish(new DomainEvent(USER_VERIFIED, payload));
     // then
-    expect(
-      await userFacade.verify({ id: AnakinSkywalker.id, isVerified: true }),
-    ).toBeTruthy();
+    expect(await userFacade.getById(AnakinSkywalker.id)).toMatchObject({
+      isVerified: true,
+    });
   });
 
   test('should get only the verified users', async () => {
@@ -293,9 +315,7 @@ describe('events', () => {
     const foundUsers = await userFacade.find({ isVerified: true });
     // then
     expect(foundUsers).toContainEqual(
-      SampleUser.sampleGetUser(
-        Object.assign({}, AnakinSkywalker, { isVerified: true }),
-      ),
+      SampleUser.sampleGetUser({ ...AnakinSkywalker, isVerified: true }),
     );
     expect(foundUsers).not.toContainEqual(SampleUser.sampleGetUser(AdrianMonk));
     expect(foundUsers).not.toContainEqual(

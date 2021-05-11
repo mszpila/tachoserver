@@ -4,35 +4,37 @@ import { MongoDbUserRepository } from './domain/infrastructure/MongoDbUserReposi
 import { UserController } from './domain/infrastructure/UserController';
 import { UserQueryRepository } from './domain/IUserQueryRepository';
 import { UserRepository } from './domain/IUserRepository';
-import { User } from './domain/User';
 import { UserConfiguration } from './domain/UserConfiguration';
 import { UserFacade } from './domain/UserFacade';
-// import { Profile, ProfileBase } from 'nestjsx-automapper';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-
-// @Profile('usesrMapper')
-// class UserProfile extends ProfileBase {}
+import { DomainEventPublisher } from '../shared/infrastructure/events/IDomainEventPublisher';
+import { UserDomainEventNativePublisher } from './domain/infrastructure/UserDomainEventNativePublisher';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UserDomainEventNestListener } from './domain/infrastructure/UserDoaminEventNestListener';
 
 const FacadeConfig = {
   provide: UserFacade,
   useFactory: (
+    domainEventPublisher: DomainEventPublisher,
     userRepository: UserRepository,
     userQueryRepository: UserQueryRepository,
-    eventEmitter: EventEmitter2,
   ) => {
     return new UserConfiguration().userFacade(
+      domainEventPublisher,
       userRepository,
       userQueryRepository,
-      eventEmitter,
     );
   },
-  inject: [MongoDbUserRepository, EventEmitter2],
+  inject: [UserDomainEventNativePublisher, MongoDbUserRepository],
 };
 
 @Module({
-  // imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
-  providers: [FacadeConfig, MongoDbUserRepository],
+  providers: [
+    UserDomainEventNativePublisher,
+    MongoDbUserRepository,
+    FacadeConfig,
+    UserDomainEventNestListener,
+  ],
   exports: [UserFacade],
 })
 export class UserModule {}

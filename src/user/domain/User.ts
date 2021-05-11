@@ -1,35 +1,28 @@
 import { Uuid } from '../../shared/domain/Uuid';
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 // import { JWTToken } from './JWTToken';
 // import { RefreshToken } from './RefreshToken';
 import { UserEmail } from './UserEmail';
-import { UserName, UserNameTypes } from './UserName';
+import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
-import { UserRoles } from './UserRoles';
-import { AutoMap } from '@automapper/classes';
+import { UserRole } from './UserRole';
 import { UserDto } from './dto/UserDto';
-import { UserBuilder } from './UserBuilder';
 
 @Entity('users')
 export class User {
   @Column(() => Uuid)
-  @AutoMap({ typeFn: () => Uuid })
   private id: Uuid;
 
   @Column(() => UserName)
-  @AutoMap({ typeFn: () => UserName })
   private firstName: UserName;
 
   @Column(() => UserName)
-  @AutoMap({ typeFn: () => UserName })
   private lastName: UserName;
 
   @Column(() => UserEmail)
-  @AutoMap({ typeFn: () => UserEmail })
   private email: UserEmail;
 
   @Column(() => UserPassword)
-  @AutoMap({ typeFn: () => UserPassword })
   private password: UserPassword;
 
   @Column()
@@ -39,36 +32,40 @@ export class User {
   private isEmailVerified: boolean;
 
   @Column()
-  // @AutoMap({ typeFn: () => String })
-  private userRoles: UserRoles[];
+  private userRoles: UserRole[];
 
   @Column()
-  // @AutoMap({ typeFn: () => Boolean })
   private isBanned: boolean;
 
   @Column()
-  // @AutoMap({ typeFn: () => Boolean })
   private isDeleted: boolean;
+
   // @Column()
   // private accessToken: JWTToken;
+
   // @Column()
   // private refreshToken: RefreshToken;
 
   @Column()
-  // @AutoMap({ typeFn: () => Date })
   private lastActive: Date;
 
-  constructor(builder: UserBuilder) {
-    this.id = builder.id;
-    this.firstName = builder.firstName;
-    this.lastName = builder.lastName;
-    this.email = builder.email;
-    this.password = builder.password;
-    this.isVerified = builder.isVerified;
-    this.isEmailVerified = builder.isEmailVerified;
-    this.userRoles = builder.userRoles;
-    this.isBanned = builder.isBanned;
-    this.isDeleted = builder.isDeleted;
+  constructor(
+    id: Uuid,
+    firstName: UserName,
+    lastName: UserName,
+    email: UserEmail,
+    password: UserPassword,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.password = password;
+    this.isVerified = false;
+    this.isEmailVerified = false;
+    this.userRoles = [UserRole.USER];
+    this.isBanned = false;
+    this.isDeleted = false;
     // this.accessToken = new JWTToken();
     // this.refreshToken = new RefreshToken();
     this.lastActive = new Date();
@@ -85,45 +82,51 @@ export class User {
       .build();
   }
 
-  async toBuilder(): Promise<UserBuilder> {
-    return User.builder()
-      .withId(this.id.toString())
-      .withFirstName(this.firstName.toString())
-      .withLastName(this.lastName.toString())
-      .withEmail(this.email.toString())
-      .withIsVerified(this.isVerified)
-      .withIsVerified(this.isVerified)
-      .withUserRoles(this.userRoles)
-      .withIsBanned(this.isBanned)
-      .withIsDeleted(this.isDeleted)
-      .withPassword(this.password.toString(), true);
+  setFirstName(firstName: UserName): void {
+    // this.firstName = new UserName(firstName, UserNameTypes.FIRST);
+    this.firstName = firstName;
   }
 
-  static builder(): UserBuilder {
-    return new UserBuilder();
+  setLastName(lastName: UserName): void {
+    // this.lastName = new UserName(lastName, UserNameTypes.LAST);
+    this.lastName = lastName;
   }
 
-  // setFirstName(firstName: string) {
-  //   this.firstName = new UserName(firstName, UserNameTypes.FIRST);
-  // }
+  setEmail(email: UserEmail): void {
+    // this.email = new UserEmail(email);
+    this.email = email;
+  }
 
-  // setLastName(lastName: string) {
-  //   this.lastName = new UserName(lastName, UserNameTypes.LAST);
-  // }
+  setPassword(password: UserPassword): void {
+    // this.password = await UserPassword.createPassword(password);
+    this.password = password;
+  }
 
-  // setEmail(email: string) {
-  //   this.email = new UserEmail(email);
-  // }
+  setIsVerified(isVerified: boolean) {
+    this.isVerified = isVerified;
+  }
 
-  // setIsVerified(isVerified: boolean) {
-  //   this.isVerified = isVerified;
-  // }
+  setIsEmailVerified(isEmailVerified: boolean) {
+    this.isEmailVerified = isEmailVerified;
+  }
 
-  // setIsEmailVerified(isEmailVerified: boolean) {
-  //   this.isEmailVerified = isEmailVerified;
-  // }
+  addRole(roleToAdd: UserRole): void {
+    this.userRoles.push(roleToAdd);
+  }
 
-  // async setPassword(password: string) {
-  //   this.password = await UserPassword.builder().withPassword(password);
-  // }
+  removeRole(roleToRemove: UserRole): void {
+    this.userRoles.filter((role) => role !== roleToRemove);
+  }
+
+  setIsBanned(isBanned: boolean): void {
+    this.isBanned = isBanned;
+  }
+
+  setIsDeleted(isDeleted: boolean): void {
+    this.isDeleted = isDeleted;
+  }
+
+  setLastActive(): void {
+    this.lastActive = new Date();
+  }
 }

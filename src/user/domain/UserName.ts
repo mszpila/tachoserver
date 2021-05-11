@@ -40,8 +40,8 @@ export class UserName {
     return this.name;
   }
 
-  private static format(email: string): string {
-    const lowerCase = email.toLowerCase();
+  private static format(name: string): string {
+    const lowerCase = name.toLowerCase();
     return lowerCase.charAt(0).toUpperCase() + lowerCase.slice(1);
   }
 }

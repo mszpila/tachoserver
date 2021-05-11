@@ -15,11 +15,10 @@ const dbConfig = {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({ global: true }),
     TypeOrmModule.forRoot({
       type: 'mongodb',
       url: process.env.DB_URL,
-      // autoLoadEntities: true,
       entities: [User],
     }),
     UserModule,

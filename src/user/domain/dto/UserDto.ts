@@ -3,20 +3,12 @@
 // Inspired by Clean Code by Robert C. Martin(Uncle Bob)
 // https://stackoverflow.com/questions/16539238/public-fields-in-a-data-transfer-object
 
-import { AutoMap } from '@automapper/classes';
-
 export class UserDto {
-  @AutoMap()
   public id: string;
-  @AutoMap()
   public firstName: string;
-  @AutoMap()
   public lastName: string;
-  @AutoMap()
   public email: string;
-  @AutoMap()
   public password: string;
-  @AutoMap()
   public isVerified: boolean;
 
   constructor(builder: UserDtoBuilder) {

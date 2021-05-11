@@ -3,5 +3,5 @@ export class FindDto {
   isVerified?: boolean;
   offset?: number;
   limit?: number;
-  sort?: string | unknown;
+  sort?: string;
 }
