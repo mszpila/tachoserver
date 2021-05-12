@@ -1,3 +1,11 @@
+// export class FindUserDto {
+//   name = '';
+//   isVerified = false;
+//   offset = 0;
+//   limit = 20;
+//   sort = '';
+// }
+
 export class FindUserDto {
   readonly name: string;
   readonly isVerified: boolean;

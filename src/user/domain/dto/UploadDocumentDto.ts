@@ -1,3 +1,9 @@
+// export class UploadDocumentDto {
+//   frontUrl: string;
+//   backUrl: string;
+//   selfieUrl: string;
+// }
+
 export class UploadDocumentDto {
   readonly frontUrl: string;
   readonly backUrl: string;

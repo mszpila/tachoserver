@@ -6,14 +6,16 @@ import { UserDto } from './dto/UserDto';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
 import { UserPassword } from './UserPassword';
-// import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UploadDocumentDto } from './dto/UploadDocumentDto';
 import { UserUpdater } from './UserUpdater';
 import { UserCreator } from './UserCreator';
 import { GetUserDto } from './dto/GetUserDto';
 import { DomainEventPublisher } from '../../shared/infrastructure/events/IDomainEventPublisher';
-import { DomainEvent } from '../../shared/infrastructure/events/DomainEvent';
-import { VERIFICATION_REQUESTED } from '../../shared/infrastructure/events/EventTopic';
+import { VERIFICATION_REQUESTED } from '../../shared/infrastructure/events/user/EventTopic';
+import {
+  UserVerificationRequest,
+  UserVerified,
+} from '../../shared/infrastructure/events/user/UserEvent';
 
 @Injectable()
 export class UserFacade {
@@ -43,9 +45,6 @@ export class UserFacade {
   }
 
   async find(query: FindUserDto): Promise<GetUserDto[]> {
-    // query.name = query.name ? query.name.toLowerCase() : '';
-    // query.offset = query.offset || 0;
-    // query.limit = query.limit || 20;
     const users = await this.userQueryRepository.find(query);
     const usersArray: GetUserDto[] = [];
     for (const user of users) {
@@ -90,8 +89,9 @@ export class UserFacade {
       throw new BadRequestException('User already verified');
     }
     this.domainEventPublisher.publish(
-      new DomainEvent(VERIFICATION_REQUESTED, {
-        userId: id,
+      VERIFICATION_REQUESTED,
+      new UserVerificationRequest({
+        id,
         frontUrl: upload.frontUrl,
         backUrl: upload.backUrl,
         selfieUrl: upload.selfieUrl,
@@ -99,9 +99,10 @@ export class UserFacade {
     );
   }
 
-  async verify(payload: any): Promise<void> {
-    const user = await this.userRepository.findById(payload.id);
-    user.setIsVerified(payload.isVerified);
+  async verify(payload: UserVerified): Promise<void> {
+    const { id, isVerified } = payload.getData();
+    const user = await this.userRepository.findById(id);
+    user.setIsVerified(isVerified);
     await this.userRepository.update(user);
   }
 

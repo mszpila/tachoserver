@@ -1,3 +1,10 @@
+// export class UserUpdateDto {
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   password: string;
+// }
+
 export class UserUpdateDto {
   readonly firstName: string;
   readonly lastName: string;

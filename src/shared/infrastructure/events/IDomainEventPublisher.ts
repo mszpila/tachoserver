@@ -1,6 +1,5 @@
-import { DomainEvent } from './DomainEvent';
+import { DomainEvent } from './IDomainEvent';
 
 export interface DomainEventPublisher {
-  publish(event: DomainEvent): void;
-  // subscribe(topic: string, callback: (payload: any) => void): void;
+  publish(eventTopic: string, event: DomainEvent): void;
 }

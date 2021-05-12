@@ -1,6 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserDomainEventNativePublisher } from '../../src/user/domain/infrastructure/UserDomainEventNativePublisher';
-import { DomainEvent } from '../../src/shared/infrastructure/events/DomainEvent';
 import { UploadDocumentDto } from '../../src/user/domain/dto/UploadDocumentDto';
 import { UserDto } from '../../src/user/domain/dto/UserDto';
 import { UserConfiguration } from '../../src/user/domain/UserConfiguration';
@@ -10,10 +9,15 @@ import { UserDomainEventNativeListener } from '../../src/user/domain/infrastruct
 import {
   USER_VERIFIED,
   VERIFICATION_REQUESTED,
-} from '../../src/shared/infrastructure/events/EventTopic';
+} from '../../src/shared/infrastructure/events/user/EventTopic';
 import { FindUserDto } from '../../src/user/domain/dto/FindUserDto';
 import { UserUpdateDto } from '../../src/user/domain/dto/UserUpdateDto';
+import {
+  UserVerificationRequest,
+  UserVerified,
+} from '../../src/shared/infrastructure/events/user/UserEvent';
 
+// initializing the user facade for unit test - manual injections
 const eventEmitterSingleton = new EventEmitter2();
 const eventDomainPublisher = new UserDomainEventNativePublisher(
   eventEmitterSingleton,
@@ -23,21 +27,21 @@ const userFacade: UserFacade = new UserConfiguration().userFacade(
 );
 new UserDomainEventNativeListener(userFacade, eventEmitterSingleton);
 
-// create a user
+// creating sample users
 const JohnMarston: UserDto = SampleUser.sampleNewUser();
-let AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
-  id: '15605809-1557-49fe-a58d-c861d2291689',
-  firstName: 'Anakin',
-  lastName: 'Skywalker',
-  email: 'skywalker@gmail.com',
-  password: 'xk&@fqT5h',
-});
 const AdrianMonk: UserDto = SampleUser.sampleNewUser({
   id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
   firstName: 'Adrian',
   lastName: 'Monk',
   email: 'a.monk@gmail.com',
   password: '57*-?#xMNL',
+});
+let AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
+  id: '15605809-1557-49fe-a58d-c861d2291689',
+  firstName: 'Anakin',
+  lastName: 'Skywalker',
+  email: 'skywalker@gmail.com',
+  password: 'xk&@fqT5h',
 });
 
 describe('registration', () => {
@@ -297,8 +301,9 @@ describe('events', () => {
 
     // then
     expect(publishMock).toHaveBeenCalledWith(
-      new DomainEvent(VERIFICATION_REQUESTED, {
-        userId: AnakinSkywalker.id,
+      VERIFICATION_REQUESTED,
+      new UserVerificationRequest({
+        id: AnakinSkywalker.id,
         frontUrl: upload.frontUrl,
         backUrl: upload.backUrl,
         selfieUrl: upload.selfieUrl,
@@ -313,7 +318,7 @@ describe('events', () => {
       isVerified: true,
     };
     // when
-    eventDomainPublisher.publish(new DomainEvent(USER_VERIFIED, payload));
+    eventDomainPublisher.publish(USER_VERIFIED, new UserVerified(payload));
     // then
     expect(await userFacade.getById(AnakinSkywalker.id)).toMatchObject({
       isVerified: true,

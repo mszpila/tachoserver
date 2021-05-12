@@ -3,6 +3,15 @@
 // Inspired by Clean Code by Robert C. Martin(Uncle Bob)
 // https://stackoverflow.com/questions/16539238/public-fields-in-a-data-transfer-object
 
+// export class UserDto {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   password: string;
+//   isVerified: boolean;
+// }
+
 export class UserDto {
   readonly id: string;
   readonly firstName: string;
