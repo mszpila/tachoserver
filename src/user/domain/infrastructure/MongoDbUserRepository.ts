@@ -15,9 +15,6 @@ import { User } from '../User';
 export class MongoDbUserRepository
   implements UserRepository, UserQueryRepository {
   constructor(private entityManager = getMongoManager()) {}
-  // constructor(
-  //   @InjectRepository(User) private entityManager = getMongoRepository(User),
-  // ) {}
 
   async save(user: User): Promise<boolean> {
     if (!user) {
@@ -63,6 +60,11 @@ export class MongoDbUserRepository
   }
 
   async findByEmail(email: string): Promise<User> {
+    // const user = await this.userModel.aggregate([
+    //   { $match: { email } },
+    //   { project: { _id: 0, password: 0 } },
+    // ]);
+    // const user = await this.userModel.findOne({ email }).exec();
     const user = await this.entityManager.findOne(User, email);
     if (!user) {
       throw new NotFoundException('Wrong credentials');

@@ -1,8 +1,6 @@
-import { AutoMap } from '@automapper/classes';
 import { BadRequestException } from '@nestjs/common';
 
 export class UserEmail {
-  @AutoMap()
   private email: string;
 
   constructor(email: string) {

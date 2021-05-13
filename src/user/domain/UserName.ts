@@ -1,6 +1,4 @@
-import { AutoMap } from '@automapper/classes';
 import { BadRequestException } from '@nestjs/common';
-import { Column } from 'typeorm';
 
 export enum UserNameTypes {
   FIRST = 'First',
@@ -10,8 +8,6 @@ export enum UserNameTypes {
 export class UserName {
   public static maxLength = 30;
   public static minLength = 2;
-  @AutoMap()
-  @Column()
   private name: string;
 
   constructor(name: string, type: UserNameTypes) {

@@ -16,10 +16,15 @@ const dbConfig = {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot({ global: true }),
+    // MongooseModule.forRoot('mongodb://localhost/nest'),
     TypeOrmModule.forRoot({
       type: 'mongodb',
+      port: parseInt(process.env.DB_PORT),
       url: process.env.DB_URL,
-      entities: [User],
+      username: process.env.USERNAME,
+      password: process.env.PASSWORD,
+      database: process.env.DB_NAME,
+      autoLoadEntities: true,
     }),
     UserModule,
   ],

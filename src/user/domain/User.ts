@@ -1,29 +1,29 @@
 import { Uuid } from '../../shared/domain/Uuid';
-import { Column, Entity } from 'typeorm';
-// import { JWTToken } from './JWTToken';
-// import { RefreshToken } from './RefreshToken';
 import { UserEmail } from './UserEmail';
 import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
 import { UserDto } from './dto/UserDto';
+import { Column, Entity, ObjectIdColumn } from 'typeorm';
+// import { JWTToken } from './JWTToken';
+// import { RefreshToken } from './RefreshToken';
 
-@Entity('users')
+@Entity()
 export class User {
-  @Column(() => Uuid)
-  private id: Uuid;
+  @ObjectIdColumn()
+  private id: string;
 
-  @Column(() => UserName)
-  private firstName: UserName;
+  @Column()
+  private firstName: string;
 
-  @Column(() => UserName)
-  private lastName: UserName;
+  @Column()
+  private lastName: string;
 
-  @Column(() => UserEmail)
-  private email: UserEmail;
+  @Column()
+  private email: string;
 
-  @Column(() => UserPassword)
-  private password: UserPassword;
+  @Column()
+  private password: string;
 
   @Column()
   private isVerified: boolean;
@@ -31,8 +31,9 @@ export class User {
   @Column()
   private isEmailVerified: boolean;
 
-  @Column()
-  private userRoles: UserRole[];
+  // no docs for mongodb
+  @Column({ type: 'enum', enum: [UserRole] })
+  private userRoles: [UserRole];
 
   @Column()
   private isBanned: boolean;
@@ -46,7 +47,7 @@ export class User {
   // @Column()
   // private refreshToken: RefreshToken;
 
-  @Column()
+  @Column('date')
   private lastActive: Date;
 
   constructor(
@@ -56,11 +57,11 @@ export class User {
     email: UserEmail,
     password: UserPassword,
   ) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.password = password;
+    this.id = id.toString();
+    this.firstName = firstName.toString();
+    this.lastName = lastName.toString();
+    this.email = email.toString();
+    this.password = password.toString();
     this.isVerified = false;
     this.isEmailVerified = false;
     this.userRoles = [UserRole.USER];
@@ -73,11 +74,11 @@ export class User {
 
   toDto(): UserDto {
     return new UserDto(
-      this.id.toString(),
-      this.firstName.toString(),
-      this.lastName.toString(),
-      this.email.toString(),
-      this.password.toString(),
+      this.id,
+      this.firstName,
+      this.lastName,
+      this.email,
+      this.password,
       this.isVerified,
     );
     // return UserDto.builder()
@@ -92,22 +93,22 @@ export class User {
 
   setFirstName(firstName: UserName): void {
     // this.firstName = new UserName(firstName, UserNameTypes.FIRST);
-    this.firstName = firstName;
+    this.firstName = firstName.toString();
   }
 
   setLastName(lastName: UserName): void {
     // this.lastName = new UserName(lastName, UserNameTypes.LAST);
-    this.lastName = lastName;
+    this.lastName = lastName.toString();
   }
 
   setEmail(email: UserEmail): void {
     // this.email = new UserEmail(email);
-    this.email = email;
+    this.email = email.toString();
   }
 
   setPassword(password: UserPassword): void {
     // this.password = await UserPassword.createPassword(password);
-    this.password = password;
+    this.password = password.toString();
   }
 
   setIsVerified(isVerified: boolean) {
