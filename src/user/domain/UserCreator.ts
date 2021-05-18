@@ -4,6 +4,8 @@ import { User } from './User';
 import { UserEmail } from './UserEmail';
 import { UserName, UserNameTypes } from './UserName';
 import { UserPassword } from './UserPassword';
+import { UserRole } from './UserRole';
+import { UserSnapshot } from './UserSnapshot';
 
 export class UserCreator {
   async from(source: UserDto): Promise<User> {
@@ -20,6 +22,28 @@ export class UserCreator {
     const password: UserPassword = await UserPassword.createPassword(
       source.password,
     );
-    return new User(id, firstName, lastName, email, password);
+    // return User.restore({
+    //   id: id.toString(),
+    //   firstName: firstName.toString(),
+    //   lastName: lastName.toString(),
+    //   email: email.toString(),
+    //   password: password.toString(),
+    //   isVerified: false,
+    //   isEmailVerified: true,
+    //   userRoles: [UserRole.USER],
+    //   isBanned: false,
+    //   isDeleted: false,
+    //   date: new Date().toISOString(),
+    // });
+    return User.restore(
+      new UserSnapshot(
+        id.toString(),
+        firstName.toString(),
+        lastName.toString(),
+        email.toString(),
+        password.toString(),
+      ),
+    );
+    // return new User(id, firstName, lastName, email, password);
   }
 }

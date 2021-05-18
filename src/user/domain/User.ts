@@ -1,76 +1,70 @@
-import { Uuid } from '../../shared/domain/Uuid';
+// import { Uuid } from '../../shared/domain/Uuid';
 import { UserEmail } from './UserEmail';
 import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
 import { UserDto } from './dto/UserDto';
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { UserSnapshot } from './UserSnapshot';
+// import { Column, Entity, ObjectIdColumn } from 'typeorm';
 // import { JWTToken } from './JWTToken';
 // import { RefreshToken } from './RefreshToken';
 
-@Entity()
 export class User {
-  @ObjectIdColumn()
   private id: string;
-
-  @Column()
   private firstName: string;
-
-  @Column()
   private lastName: string;
-
-  @Column()
   private email: string;
-
-  @Column()
   private password: string;
-
-  @Column()
   private isVerified: boolean;
-
-  @Column()
   private isEmailVerified: boolean;
-
-  // no docs for mongodb
-  @Column({ type: 'enum', enum: [UserRole] })
-  private userRoles: [UserRole];
-
-  @Column()
+  private userRoles: string[];
   private isBanned: boolean;
-
-  @Column()
   private isDeleted: boolean;
+  // private accessToken: string;
+  // private refreshToken: string;
+  private lastActive: string;
 
-  // @Column()
-  // private accessToken: JWTToken;
+  static restore(userSnapshot: UserSnapshot): User {
+    return new User(userSnapshot);
+  }
 
-  // @Column()
-  // private refreshToken: RefreshToken;
-
-  @Column('date')
-  private lastActive: Date;
-
-  constructor(
-    id: Uuid,
-    firstName: UserName,
-    lastName: UserName,
-    email: UserEmail,
-    password: UserPassword,
-  ) {
-    this.id = id.toString();
-    this.firstName = firstName.toString();
-    this.lastName = lastName.toString();
-    this.email = email.toString();
-    this.password = password.toString();
-    this.isVerified = false;
-    this.isEmailVerified = false;
-    this.userRoles = [UserRole.USER];
-    this.isBanned = false;
-    this.isDeleted = false;
+  private constructor(userSnapshot: UserSnapshot) {
+    this.id = userSnapshot.id;
+    this.firstName = userSnapshot.firstName;
+    this.lastName = userSnapshot.lastName;
+    this.email = userSnapshot.email;
+    this.password = userSnapshot.password;
+    this.isVerified = userSnapshot.isVerified;
+    this.isEmailVerified = userSnapshot.isEmailVerified;
+    this.userRoles = userSnapshot.userRoles;
+    this.isBanned = userSnapshot.isBanned;
+    this.isDeleted = userSnapshot.isDeleted;
     // this.accessToken = new JWTToken();
     // this.refreshToken = new RefreshToken();
-    this.lastActive = new Date();
+    this.lastActive = new Date().toISOString();
   }
+
+  // constructor(
+  //   id: Uuid,
+  //   firstName: UserName,
+  //   lastName: UserName,
+  //   email: UserEmail,
+  //   password: UserPassword,
+  // ) {
+  //   this.id = id.toString();
+  //   this.firstName = firstName.toString();
+  //   this.lastName = lastName.toString();
+  //   this.email = email.toString();
+  //   this.password = password.toString();
+  //   this.isVerified = false;
+  //   this.isEmailVerified = false;
+  //   this.userRoles = [UserRole.USER];
+  //   this.isBanned = false;
+  //   this.isDeleted = false;
+  //   // this.accessToken = new JWTToken();
+  //   // this.refreshToken = new RefreshToken();
+  //   this.lastActive = new Date();
+  // }
 
   toDto(): UserDto {
     return new UserDto(
@@ -136,6 +130,6 @@ export class User {
   }
 
   setLastActive(): void {
-    this.lastActive = new Date();
+    this.lastActive = new Date().toISOString();
   }
 }

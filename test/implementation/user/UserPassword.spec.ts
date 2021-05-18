@@ -1,4 +1,4 @@
-import { UserPassword } from '../../src/user/domain/UserPassword';
+import { UserPassword } from '../../../src/user/domain/UserPassword';
 
 test('should hash the plain password', async () => {
   // given

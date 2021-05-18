@@ -20,6 +20,12 @@ export class UserController {
   // }
 
   @Get()
+  async getHello(): Promise<string> {
+    await this.userFacade.getById('123');
+    return 'Hello World!';
+  }
+
+  @Get()
   findAll(@Query() query) {
     // return this.usersService.findAll();
   }

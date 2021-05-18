@@ -10,6 +10,7 @@ import { UserDomainEventNativePublisher } from './domain/infrastructure/UserDoma
 import { UserDomainEventNestListener } from './domain/infrastructure/UserDoaminEventNestListener';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/User';
+import { MongoModule } from 'nest-mongodb';
 
 const FacadeConfig = {
   provide: UserFacade,
@@ -28,7 +29,10 @@ const FacadeConfig = {
 };
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [
+    // TypeOrmModule.forFeature([User]),
+    MongoModule.forFeature(['users']),
+  ],
   controllers: [UserController],
   providers: [
     UserDomainEventNativePublisher,

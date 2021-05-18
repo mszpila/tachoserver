@@ -1,31 +1,17 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserDomainEventNativePublisher } from '../../src/user/domain/infrastructure/UserDomainEventNativePublisher';
-import { UploadDocumentDto } from '../../src/user/domain/dto/UploadDocumentDto';
-import { UserDto } from '../../src/user/domain/dto/UserDto';
-import { UserConfiguration } from '../../src/user/domain/UserConfiguration';
-import { UserFacade } from '../../src/user/domain/UserFacade';
-import { SampleUser } from '../sample_data/SampleUser';
-import { UserDomainEventNativeListener } from '../../src/user/domain/infrastructure/UserDomainEventNativeListener';
+import { UploadDocumentDto } from '../../../src/user/domain/dto/UploadDocumentDto';
+import { UserDto } from '../../../src/user/domain/dto/UserDto';
+import { SampleUser } from '../../sample_data/SampleUser';
 import {
   USER_VERIFIED,
   VERIFICATION_REQUESTED,
-} from '../../src/shared/infrastructure/events/user/EventTopic';
-import { FindUserDto } from '../../src/user/domain/dto/FindUserDto';
-import { UserUpdateDto } from '../../src/user/domain/dto/UserUpdateDto';
+} from '../../../src/shared/infrastructure/events/user/EventTopic';
+import { FindUserDto } from '../../../src/user/domain/dto/FindUserDto';
+import { UserUpdateDto } from '../../../src/user/domain/dto/UserUpdateDto';
 import {
   UserVerificationRequest,
   UserVerified,
-} from '../../src/shared/infrastructure/events/user/UserEvent';
-
-// initializing the user facade for unit test - manual injections
-const eventEmitterSingleton = new EventEmitter2();
-const eventDomainPublisher = new UserDomainEventNativePublisher(
-  eventEmitterSingleton,
-);
-const userFacade: UserFacade = new UserConfiguration().userFacade(
-  eventDomainPublisher,
-);
-new UserDomainEventNativeListener(userFacade, eventEmitterSingleton);
+} from '../../../src/shared/infrastructure/events/user/UserEvent';
+import { userFacade, eventDomainPublisher } from './helpers/moduleInit';
 
 // creating sample users
 const JohnMarston: UserDto = SampleUser.sampleNewUser();
@@ -84,6 +70,15 @@ describe('registration', () => {
     // then
     await expect(userFacade.register(badUser)).rejects.toThrowError(
       'First name is too short',
+    );
+  });
+
+  test('should not register a new user due to empty first name', async () => {
+    // given
+    const badUser = SampleUser.sampleNewUser({ id: '', firstName: '' });
+    // then
+    await expect(userFacade.register(badUser)).rejects.toThrowError(
+      'First name field must be provided',
     );
   });
 
