@@ -71,8 +71,8 @@ export class UserFacade {
     );
   }
 
-  async update(id: string, userUpdateDto: UserUpdateDto): Promise<void> {
-    await this.updater.execute(id, userUpdateDto);
+  async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {
+    return await this.updater.execute(id, userUpdateDto);
   }
 
   async deleteById(id: string): Promise<boolean> {
