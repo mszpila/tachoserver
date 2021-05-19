@@ -1,32 +1,118 @@
+import * as mongo from 'mongodb';
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { UserFacade } from '../../../src/user/domain/UserFacade';
 import { moduleInitialization } from './helpers/moduleInit';
+import { SampleUser } from '../../sample_data/user/SampleUser';
+import { LoginDto } from '../../../src/user/domain/dto/LoginDto';
+import { UserDto } from '../../../src/user/domain/dto/UserDto';
+// import { FindUserDto } from '../../../src/user/domain/dto/FindUserDto';
+// import { GetUserDto } from '../../../src/user/domain/dto/GetUserDto';
 
 let app: INestApplication;
 let userFacade: UserFacade;
+// let mongodb: MongoClient;
+
+const JohnMarston = SampleUser.sampleNewUser();
+const AdrianMonk: UserDto = SampleUser.sampleNewUser({
+  id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
+  firstName: 'Adrian',
+  lastName: 'Monk',
+  email: 'a.monk@gmail.com',
+  password: '57*-?#xMNL',
+});
+const AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
+  id: '15605809-1557-49fe-a58d-c861d2291689',
+  firstName: 'Anakin',
+  lastName: 'Skywalker',
+  email: 'skywalker@gmail.com',
+  password: 'xk&@fqT5h',
+});
 
 beforeAll(async () => {
   const module = await moduleInitialization();
   app = module.createNestApplication();
+  await app.init();
   userFacade = module.get(UserFacade);
+  // mongodb = await module.get(MongoModule);
 });
 
-describe('User', () => {
-  // it(`/GET cats`, () => {
-  //   return request(app.getHttpServer()).get('/cats').expect(200).expect({
-  //     data: true,
-  //   });
-  // });
+describe('/POST', () => {
+  test('successfull registration', async () => {
+    return await request(app.getHttpServer())
+      .post('/users/register')
+      .send(JohnMarston)
+      .expect(201);
+    // return await request(app.getHttpServer())
+    //   .get('/users')
+    //   .send({})
+    //   .expect(200)
+    //   .expect([JohnMarston]);
+  });
 
-  it('/GET users', () => {
+  test('successfull log in', async () => {
+    return request(app.getHttpServer())
+      .post('/users/login')
+      .send(new LoginDto(JohnMarston.email, JohnMarston.password))
+      .expect(201);
+  });
+});
+
+describe('/GET', () => {
+  test('fetch users sorted and paginated', async () => {
+    await userFacade.register(AdrianMonk);
+    await userFacade.register(AnakinSkywalker);
     return request(app.getHttpServer())
       .get('/users')
+      .query({
+        sort: 'fnd',
+        offset: 1,
+        limit: 1,
+      })
       .expect(200)
-      .expect('Hello World!');
+      .expect([
+        {
+          id: AnakinSkywalker.id,
+          firstName: AnakinSkywalker.firstName,
+          lastName: AnakinSkywalker.lastName,
+          email: AnakinSkywalker.email,
+          isVerified: AnakinSkywalker.isVerified,
+        },
+      ]);
+  });
+
+  test('fetch user by id', async () => {
+    return request(app.getHttpServer())
+      .get(`/users/${AnakinSkywalker.id}`)
+      .expect(200)
+      .expect({
+        id: AnakinSkywalker.id,
+        firstName: AnakinSkywalker.firstName,
+        lastName: AnakinSkywalker.lastName,
+        email: AnakinSkywalker.email,
+        isVerified: AnakinSkywalker.isVerified,
+      });
+  });
+});
+
+describe('/PUT', () => {
+  test('update user info', async () => {
+    return await request(app.getHttpServer())
+      .put(`/users/${AnakinSkywalker.id}`)
+      .send()
+      .expect(200);
   });
 });
 
 afterAll(async () => {
+  // mongodb.db('tachotestUser').dropDatabase();
+  (
+    await mongo.connect('mongodb://localhost', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+  )
+    .db('tachotestUser')
+    .dropDatabase();
   await app.close();
 });

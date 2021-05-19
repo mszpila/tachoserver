@@ -4,25 +4,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { InjectCollection } from 'nest-mongodb';
-import { getMongoManager, getMongoRepository, Like } from 'typeorm';
 import { FindUserDto } from '../dto/FindUserDto';
 import { PassowrdCompareDto } from '../dto/PasswordCompareDto';
-import { UserDto } from '../dto/UserDto';
 import { UserQueryRepository } from '../IUserQueryRepository';
 import { UserRepository } from '../IUserRepository';
 import { User } from '../User';
 import { UserSnapshot } from '../UserSnapshot';
 import { GetUserDto } from '../dto/GetUserDto';
 
-// @Injectable()
+@Injectable()
 export class MongoDbUserRepository
   implements UserRepository, UserQueryRepository {
-  // constructor(private entityManager = getMongoManager()) {}
-  // constructor(
-  //   @InjectRepository(User) private entityManager = getMongoRepository(User),
-  // ) {}
   constructor(
     @InjectCollection('users') private readonly repository: mongo.Collection,
   ) {}
@@ -31,26 +24,23 @@ export class MongoDbUserRepository
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
-    if (this.findByEmail(user.toDto().email)) {
+    if (await this.alreadyExists(user.toDto().email)) {
       throw new BadRequestException('Email already used');
     }
     await this.repository.insertOne(user);
-    // await this.entityManager.save(user);
     return Promise.resolve(true);
   }
 
   async findById(id: string): Promise<User> {
-    const user: UserSnapshot = await this.repository.findOne({ _id: id });
-    // const user = await this.entityManager.findOne(id);
+    const user: UserSnapshot = await this.repository.findOne({ id: id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return Promise.resolve(User.restore(user));
-    // return await this.entityManager.findOneOrFail(User, id);
   }
 
   async delete(id: string): Promise<boolean> {
-    await this.repository.deleteOne({ _id: id });
+    await this.repository.deleteOne({ id: id });
     return Promise.resolve(true);
   }
 
@@ -58,15 +48,14 @@ export class MongoDbUserRepository
     const foundUsers: UserSnapshot[] = await this.repository
       .find({
         $or: [
-          { firstName: new RegExp(`${query.name}`, 'i') },
-          { lastName: new RegExp(`${query.name}`, 'i') },
+          { firstName: new RegExp(`${query.name || ''}`, 'i') },
+          { lastName: new RegExp(`${query.name || ''}`, 'i') },
         ],
         isVerified: { $in: query.isVerified ? [true] : [true, false] },
       })
-      .project({ _id: 0 })
-      .sort(query.sort)
-      .skip(query.offset)
-      .limit(query.limit)
+      .sort(this.convertDtoQuerySortToMongoDbSortObject(query.sort))
+      .skip(Number(query.offset) || 0)
+      .limit(Number(query.limit) || 20)
       .toArray();
     return foundUsers.map(
       (user) =>
@@ -80,20 +69,39 @@ export class MongoDbUserRepository
     );
   }
 
-  findByEmailToComparePassowrd(email: string): Promise<PassowrdCompareDto> {
-    throw new Error('Method not implemented.');
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    const user: UserSnapshot = await this.repository.findOne({ email });
-    if (!user) {
+  async findByEmailToComparePassowrd(
+    email: string,
+  ): Promise<PassowrdCompareDto> {
+    const userFound: UserSnapshot = await this.repository.findOne({ email });
+    if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return Promise.resolve(User.restore(user));
+    return new PassowrdCompareDto(userFound.password);
   }
 
   async update(user: User): Promise<boolean> {
-    await this.repository.updateOne({ _id: user.toDto().id }, user);
+    // try {
+    await this.repository.replaceOne({ id: user.toDto().id }, user);
+    // } catch (err) {
+    //   console.log(err);
+    // }
     return Promise.resolve(true);
   }
+
+  private alreadyExists = async (email: string): Promise<boolean> => {
+    return await this.repository.findOne({ email });
+  };
+
+  private convertDtoQuerySortToMongoDbSortObject = (sortOption: string) => {
+    switch (sortOption) {
+      case 'fnd':
+        return { firstName: -1 };
+      case 'lna':
+        return { lastName: 1 };
+      case 'lnd':
+        return { lastName: -1 };
+      default:
+        return { firstName: 1 };
+    }
+  };
 }

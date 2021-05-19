@@ -21,7 +21,7 @@
     "test:ee": "jest --config ./test/jest-e2e.json",
     "test:impl": "jest --runInBand --testPathPattern=test/implementation",
     "test:unit": "jest --runInBand --testPathPattern=test/unit --watch",
-    "test:int": "jest --runInBand --testPathPattern=test/integration"
+    "test:int": "jest --runInBand --testPathPattern=test/integration --watch"
   },
   "dependencies": {
     "@automapper/classes": "^3.5.2",
@@ -49,7 +49,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
-    "typeorm": "^0.2.32"
+    "typeorm": "^0.2.32",
+    "uuid-mongodb": "^2.4.3"
   },
   "devDependencies": {
     "@automapper/types": "^3.5.2",

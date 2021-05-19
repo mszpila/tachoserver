@@ -60,7 +60,8 @@ export class InMemoryUserRepository
 
   async update(user: User): Promise<boolean> {
     this.map.set(user.toDto().id, user);
-    return Promise.resolve(true);
+    // return Promise.resolve(true);
+    return true;
   }
 
   private mapToArray = (): UserDto[] => {

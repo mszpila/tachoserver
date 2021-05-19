@@ -1,6 +1,6 @@
 import { UploadDocumentDto } from '../../../src/user/domain/dto/UploadDocumentDto';
 import { UserDto } from '../../../src/user/domain/dto/UserDto';
-import { SampleUser } from '../../sample_data/SampleUser';
+import { SampleUser } from '../../sample_data/user/SampleUser';
 import {
   USER_VERIFIED,
   VERIFICATION_REQUESTED,

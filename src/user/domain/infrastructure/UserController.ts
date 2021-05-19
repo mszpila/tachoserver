@@ -3,45 +3,58 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common';
+import { FindUserDto } from '../dto/FindUserDto';
+import { GetUserDto } from '../dto/GetUserDto';
+import { LoginDto } from '../dto/LoginDto';
+import { UploadDocumentDto } from '../dto/UploadDocumentDto';
+import { UserDto } from '../dto/UserDto';
+import { UserUpdateDto } from '../dto/UserUpdateDto';
 import { UserFacade } from '../UserFacade';
 
 @Controller('users')
 export class UserController {
   constructor(private userFacade: UserFacade) {}
 
-  // @Post()
-  // create(@Body() createUserDto: CreateUserDto) {
-  //   // return this.usersService.create(createUserDto);
-  // }
-
   @Get()
-  async getHello(): Promise<string> {
-    await this.userFacade.getById('123');
-    return 'Hello World!';
-  }
-
-  @Get()
-  findAll(@Query() query) {
-    // return this.usersService.findAll();
+  find(@Query() findUserDto: FindUserDto): Promise<GetUserDto[]> {
+    return this.userFacade.find(findUserDto);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    // return this.usersService.findOne(+id);
+    return this.userFacade.getById(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   // return this.usersService.update(+id, updateUserDto);
-  // }
+  @Post('register')
+  register(@Body() userDto: UserDto): Promise<boolean> {
+    return this.userFacade.register(userDto);
+  }
+
+  @Post('login')
+  login(@Body() loginDto: LoginDto): Promise<boolean> {
+    return this.userFacade.login(loginDto);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() userUpdateDto: UserUpdateDto) {
+    return this.userFacade.update(id, userUpdateDto);
+  }
+
+  @Put(':id')
+  submitVerification(
+    @Param('id') id: string,
+    @Body() uploadDocumentDto: UploadDocumentDto,
+  ) {
+    return this.userFacade.submitVerification(id, uploadDocumentDto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    // return this.usersService.remove(+id);
+    return this.userFacade.deleteById(id);
   }
 }

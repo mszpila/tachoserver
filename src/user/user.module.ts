@@ -8,8 +8,6 @@ import { UserFacade } from './domain/UserFacade';
 import { DomainEventPublisher } from '../shared/infrastructure/events/IDomainEventPublisher';
 import { UserDomainEventNativePublisher } from './domain/infrastructure/UserDomainEventNativePublisher';
 import { UserDomainEventNestListener } from './domain/infrastructure/UserDoaminEventNestListener';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './domain/User';
 import { MongoModule } from 'nest-mongodb';
 
 const FacadeConfig = {
@@ -25,14 +23,15 @@ const FacadeConfig = {
       userQueryRepository,
     );
   },
-  inject: [UserDomainEventNativePublisher, MongoDbUserRepository],
+  inject: [
+    UserDomainEventNativePublisher,
+    MongoDbUserRepository,
+    MongoDbUserRepository,
+  ],
 };
 
 @Module({
-  imports: [
-    // TypeOrmModule.forFeature([User]),
-    MongoModule.forFeature(['users']),
-  ],
+  imports: [MongoModule.forFeature(['users'])],
   controllers: [UserController],
   providers: [
     UserDomainEventNativePublisher,
