@@ -1,4 +1,5 @@
 import { Uuid } from '../../shared/domain/Uuid';
+import MUUID from 'uuid-mongodb';
 import { UserDto } from './dto/UserDto';
 import { User } from './User';
 import { UserEmail } from './UserEmail';
@@ -6,9 +7,11 @@ import { UserName, UserNameTypes } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
 import { UserSnapshot } from './UserSnapshot';
+import { Binary } from 'bson';
 
 export class UserCreator {
   async from(source: UserDto): Promise<User> {
+    // const id: Binary = MUUID.v4();
     const id: Uuid = new Uuid(source.id);
     const firstName: UserName = new UserName(
       source.firstName,
