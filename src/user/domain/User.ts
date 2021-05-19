@@ -1,4 +1,3 @@
-// import { Uuid } from '../../shared/domain/Uuid';
 import { UserEmail } from './UserEmail';
 import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
@@ -86,22 +85,18 @@ export class User {
   }
 
   setFirstName(firstName: UserName): void {
-    // this.firstName = new UserName(firstName, UserNameTypes.FIRST);
     this.firstName = firstName.toString();
   }
 
   setLastName(lastName: UserName): void {
-    // this.lastName = new UserName(lastName, UserNameTypes.LAST);
     this.lastName = lastName.toString();
   }
 
   setEmail(email: UserEmail): void {
-    // this.email = new UserEmail(email);
     this.email = email.toString();
   }
 
   setPassword(password: UserPassword): void {
-    // this.password = await UserPassword.createPassword(password);
     this.password = password.toString();
   }
 
