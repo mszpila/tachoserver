@@ -12,15 +12,13 @@ import { UserRepository } from '../../../IUserRepository';
 import { User } from '../../../User';
 import { UserSnapshot } from '../../../UserSnapshot';
 import { GetUserDto } from '../../../dto/GetUserDto';
-import { Uuid } from '../../../../../shared/domain/Uuid';
-import { from } from 'uuid-mongodb';
 import { MongoDbUserSnapshot } from './MongoDbUserSnapshot';
-import { Binary } from 'mongodb';
 import {
   fromBJSONToEntity,
   fromBJSONToGetUserDto,
   fromEntityToBJSON,
 } from './MongoDbMapper';
+import { from as stringIdToBinary } from 'uuid-mongodb';
 
 @Injectable()
 export class MongoDbUserRepository
@@ -42,7 +40,7 @@ export class MongoDbUserRepository
 
   async findById(id: string): Promise<User> {
     const user: MongoDbUserSnapshot = await this.repository.findOne({
-      _id: this.stringIdToBinary(id),
+      _id: stringIdToBinary(id),
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -52,14 +50,14 @@ export class MongoDbUserRepository
 
   async update(user: User): Promise<boolean> {
     await this.repository.replaceOne(
-      { _id: this.stringIdToBinary(user.toSnapShot().id) },
+      { _id: stringIdToBinary(user.toSnapShot().id) },
       user,
     );
     return Promise.resolve(true);
   }
 
   async delete(id: string): Promise<boolean> {
-    await this.repository.deleteOne({ _id: this.stringIdToBinary(id) });
+    await this.repository.deleteOne({ _id: stringIdToBinary(id) });
     return Promise.resolve(true);
   }
 
@@ -105,8 +103,4 @@ export class MongoDbUserRepository
         return { firstName: 1 };
     }
   };
-
-  private stringIdToBinary(id: string): Binary {
-    return new mongo.Binary(Buffer.from(id), mongo.Binary.SUBTYPE_UUID);
-  }
 }
