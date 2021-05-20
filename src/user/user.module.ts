@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MongoDbUserRepository } from './domain/infrastructure/MongoDbUserRepository';
+import { MongoDbUserRepository } from './domain/infrastructure/database/mongodb/MongoDbUserRepository';
 import { UserController } from './domain/infrastructure/UserController';
 import { UserQueryRepository } from './domain/IUserQueryRepository';
 import { UserRepository } from './domain/IUserRepository';
 import { UserConfiguration } from './domain/UserConfiguration';
 import { UserFacade } from './domain/UserFacade';
 import { DomainEventPublisher } from '../shared/infrastructure/events/IDomainEventPublisher';
-import { UserDomainEventNativePublisher } from './domain/infrastructure/UserDomainEventNativePublisher';
-import { UserDomainEventNestListener } from './domain/infrastructure/UserDoaminEventNestListener';
+import { UserDomainEventNativePublisher } from './domain/infrastructure/events/UserDomainEventNativePublisher';
+import { UserDomainEventNestListener } from './domain/infrastructure/events/UserDomainEventNestListener';
 import { MongoModule } from 'nest-mongodb';
 
 const FacadeConfig = {

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { USER_VERIFIED } from '../../../shared/infrastructure/events/user/EventTopic';
-import { DomainEventListener } from '../../../shared/infrastructure/events/IDomainEventListener';
-import { UserFacade } from '../UserFacade';
-import { UserVerified } from '../../../shared/infrastructure/events/user/UserEvent';
+import { USER_VERIFIED } from '../../../../shared/infrastructure/events/user/EventTopic';
+import { DomainEventListener } from '../../../../shared/infrastructure/events/IDomainEventListener';
+import { UserFacade } from '../../UserFacade';
+import { UserVerified } from '../../../../shared/infrastructure/events/user/UserEvent';
 
 @Injectable()
 export class UserDomainEventNestListener implements DomainEventListener {

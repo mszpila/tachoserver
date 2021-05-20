@@ -6,8 +6,6 @@ import { moduleInitialization } from './helpers/moduleInit';
 import { SampleUser } from '../../sample_data/user/SampleUser';
 import { LoginDto } from '../../../src/user/domain/dto/LoginDto';
 import { UserDto } from '../../../src/user/domain/dto/UserDto';
-// import { FindUserDto } from '../../../src/user/domain/dto/FindUserDto';
-// import { GetUserDto } from '../../../src/user/domain/dto/GetUserDto';
 
 let app: INestApplication;
 let userFacade: UserFacade;
@@ -39,15 +37,15 @@ beforeAll(async () => {
 
 describe('/POST', () => {
   test('successfull registration', async () => {
-    return await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/users/register')
       .send(JohnMarston)
       .expect(201);
-    // return await request(app.getHttpServer())
-    //   .get('/users')
-    //   .send({})
-    //   .expect(200)
-    //   .expect([JohnMarston]);
+    return await request(app.getHttpServer())
+      .get(`/users/${JohnMarston.id}`)
+      .send()
+      .expect(200)
+      .expect({ ...SampleUser.sampleGetUser(JohnMarston) });
   });
 
   test('successfull log in', async () => {
@@ -70,37 +68,36 @@ describe('/GET', () => {
         limit: 1,
       })
       .expect(200)
-      .expect([
-        {
-          id: AnakinSkywalker.id,
-          firstName: AnakinSkywalker.firstName,
-          lastName: AnakinSkywalker.lastName,
-          email: AnakinSkywalker.email,
-          isVerified: AnakinSkywalker.isVerified,
-        },
-      ]);
-  });
-
-  test('fetch user by id', async () => {
-    return request(app.getHttpServer())
-      .get(`/users/${AnakinSkywalker.id}`)
-      .expect(200)
-      .expect({
-        id: AnakinSkywalker.id,
-        firstName: AnakinSkywalker.firstName,
-        lastName: AnakinSkywalker.lastName,
-        email: AnakinSkywalker.email,
-        isVerified: AnakinSkywalker.isVerified,
-      });
+      .expect([{ ...SampleUser.sampleGetUser(AnakinSkywalker) }]);
   });
 });
 
 describe('/PUT', () => {
   test('update user info', async () => {
-    return await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .put(`/users/${AnakinSkywalker.id}`)
-      .send()
+      .send({ firstName: 'Lord', lastName: 'Vader' })
       .expect(200);
+    return await request(app.getHttpServer())
+      .get(`/users/${AnakinSkywalker.id}`)
+      .send()
+      .expect(200)
+      .expect({
+        ...SampleUser.sampleGetUser(AnakinSkywalker),
+        firstName: 'Lord',
+        lastName: 'Vader',
+      });
+  });
+});
+
+describe('/DELETE', () => {
+  test('delete user', async () => {
+    await request(app.getHttpServer())
+      .del(`/users/${AnakinSkywalker.id}`)
+      .expect(200);
+    return await request(app.getHttpServer())
+      .get(`/users/${AnakinSkywalker.id}`)
+      .expect(404);
   });
 });
 

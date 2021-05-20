@@ -4,9 +4,7 @@ import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
 import { UserDto } from './dto/UserDto';
 import { UserSnapshot } from './UserSnapshot';
-// import { Column, Entity, ObjectIdColumn } from 'typeorm';
-// import { JWTToken } from './JWTToken';
-// import { RefreshToken } from './RefreshToken';
+import { Uuid } from '../../shared/domain/Uuid';
 
 export class User {
   private id: string;
@@ -19,8 +17,6 @@ export class User {
   private userRoles: string[];
   private isBanned: boolean;
   private isDeleted: boolean;
-  // private accessToken: string;
-  // private refreshToken: string;
   private lastActive: string;
 
   static restore(userSnapshot: UserSnapshot): User {
@@ -38,50 +34,34 @@ export class User {
     this.userRoles = userSnapshot.userRoles;
     this.isBanned = userSnapshot.isBanned;
     this.isDeleted = userSnapshot.isDeleted;
-    // this.accessToken = new JWTToken();
-    // this.refreshToken = new RefreshToken();
     this.lastActive = new Date().toISOString();
   }
 
-  // constructor(
-  //   id: Uuid,
-  //   firstName: UserName,
-  //   lastName: UserName,
-  //   email: UserEmail,
-  //   password: UserPassword,
-  // ) {
-  //   this.id = id.toString();
-  //   this.firstName = firstName.toString();
-  //   this.lastName = lastName.toString();
-  //   this.email = email.toString();
-  //   this.password = password.toString();
-  //   this.isVerified = false;
-  //   this.isEmailVerified = false;
-  //   this.userRoles = [UserRole.USER];
-  //   this.isBanned = false;
-  //   this.isDeleted = false;
-  //   // this.accessToken = new JWTToken();
-  //   // this.refreshToken = new RefreshToken();
-  //   this.lastActive = new Date();
+  // toDto(): UserDto {
+  //   return new UserDto(
+  //     this.id,
+  //     this.firstName,
+  //     this.lastName,
+  //     this.email,
+  //     this.password,
+  //     this.isVerified,
+  //   );
   // }
 
-  toDto(): UserDto {
-    return new UserDto(
+  toSnapShot(): UserSnapshot {
+    return new UserSnapshot(
       this.id,
       this.firstName,
       this.lastName,
       this.email,
       this.password,
       this.isVerified,
+      this.isEmailVerified,
+      this.userRoles,
+      this.isBanned,
+      this.isDeleted,
+      this.lastActive,
     );
-    // return UserDto.builder()
-    //   .withId(this.id.toString())
-    //   .withFirstName(this.firstName.toString())
-    //   .withLastName(this.lastName.toString())
-    //   .withEmail(this.email.toString())
-    //   .withPassword(this.password.toString())
-    //   .withIsVerified(this.isVerified)
-    //   .build();
   }
 
   setFirstName(firstName: UserName): void {

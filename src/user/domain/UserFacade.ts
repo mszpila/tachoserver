@@ -34,7 +34,7 @@ export class UserFacade {
 
   async getById(id: string): Promise<GetUserDto> {
     const user = await this.userRepository.findById(id);
-    const userDto = user.toDto();
+    const userDto = user.toSnapShot();
     return new GetUserDto(
       userDto.id,
       userDto.firstName,
@@ -84,7 +84,7 @@ export class UserFacade {
     upload: UploadDocumentDto,
   ): Promise<void> {
     const user = await this.userRepository.findById(id);
-    const isVerified = user.toDto().isVerified;
+    const isVerified = user.toSnapShot().isVerified;
     if (isVerified) {
       throw new BadRequestException('User already verified');
     }

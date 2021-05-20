@@ -5,13 +5,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectCollection } from 'nest-mongodb';
-import { FindUserDto } from '../dto/FindUserDto';
-import { PassowrdCompareDto } from '../dto/PasswordCompareDto';
-import { UserQueryRepository } from '../IUserQueryRepository';
-import { UserRepository } from '../IUserRepository';
-import { User } from '../User';
-import { UserSnapshot } from '../UserSnapshot';
-import { GetUserDto } from '../dto/GetUserDto';
+import { FindUserDto } from '../../../dto/FindUserDto';
+import { PassowrdCompareDto } from '../../../dto/PasswordCompareDto';
+import { UserQueryRepository } from '../../../IUserQueryRepository';
+import { UserRepository } from '../../../IUserRepository';
+import { User } from '../../../User';
+import { UserSnapshot } from '../../../UserSnapshot';
+import { GetUserDto } from '../../../dto/GetUserDto';
+import { Uuid } from '../../../../../shared/domain/Uuid';
+import { from } from 'uuid-mongodb';
+import { MongoDbUserSnapshot } from './MongoDbUserSnapshot';
+import { Binary } from 'mongodb';
+import {
+  fromBJSONToEntity,
+  fromBJSONToGetUserDto,
+  fromEntityToBJSON,
+} from './MongoDbMapper';
 
 @Injectable()
 export class MongoDbUserRepository
@@ -24,28 +33,38 @@ export class MongoDbUserRepository
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
-    if (await this.alreadyExists(user.toDto().email)) {
+    if (await this.alreadyExists(user.toSnapShot().email)) {
       throw new BadRequestException('Email already used');
     }
-    await this.repository.insertOne(user);
+    await this.repository.insertOne(fromEntityToBJSON(user));
     return Promise.resolve(true);
   }
 
   async findById(id: string): Promise<User> {
-    const user: UserSnapshot = await this.repository.findOne({ id: id });
+    const user: MongoDbUserSnapshot = await this.repository.findOne({
+      _id: this.stringIdToBinary(id),
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return Promise.resolve(User.restore(user));
+    return Promise.resolve(fromBJSONToEntity(user));
+  }
+
+  async update(user: User): Promise<boolean> {
+    await this.repository.replaceOne(
+      { _id: this.stringIdToBinary(user.toSnapShot().id) },
+      user,
+    );
+    return Promise.resolve(true);
   }
 
   async delete(id: string): Promise<boolean> {
-    await this.repository.deleteOne({ id: id });
+    await this.repository.deleteOne({ _id: this.stringIdToBinary(id) });
     return Promise.resolve(true);
   }
 
   async find(query: FindUserDto): Promise<GetUserDto[]> {
-    const foundUsers: UserSnapshot[] = await this.repository
+    const foundUsers: MongoDbUserSnapshot[] = await this.repository
       .find({
         $or: [
           { firstName: new RegExp(`${query.name || ''}`, 'i') },
@@ -57,16 +76,7 @@ export class MongoDbUserRepository
       .skip(Number(query.offset) || 0)
       .limit(Number(query.limit) || 20)
       .toArray();
-    return foundUsers.map(
-      (user) =>
-        new GetUserDto(
-          user.id,
-          user.firstName,
-          user.lastName,
-          user.email,
-          user.isVerified,
-        ),
-    );
+    return foundUsers.map((user) => fromBJSONToGetUserDto(user));
   }
 
   async findByEmailToComparePassowrd(
@@ -77,15 +87,6 @@ export class MongoDbUserRepository
       throw new NotFoundException('Wrong credentials');
     }
     return new PassowrdCompareDto(userFound.password);
-  }
-
-  async update(user: User): Promise<boolean> {
-    // try {
-    await this.repository.replaceOne({ id: user.toDto().id }, user);
-    // } catch (err) {
-    //   console.log(err);
-    // }
-    return Promise.resolve(true);
   }
 
   private alreadyExists = async (email: string): Promise<boolean> => {
@@ -104,4 +105,8 @@ export class MongoDbUserRepository
         return { firstName: 1 };
     }
   };
+
+  private stringIdToBinary(id: string): Binary {
+    return new mongo.Binary(Buffer.from(id), mongo.Binary.SUBTYPE_UUID);
+  }
 }

@@ -12,6 +12,6 @@ export class UserSnapshot {
     readonly userRoles = Array<string>(UserRole.USER),
     readonly isBanned = false,
     readonly isDeleted = false,
-    readonly date = new Date().toISOString(),
+    readonly lastActive = new Date().toISOString(),
   ) {}
 }

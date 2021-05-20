@@ -1,6 +1,6 @@
 import { EventEmitter2 } from 'eventemitter2';
-import { UserDomainEventNativeListener } from '../../../../src/user/domain/infrastructure/UserDomainEventNativeListener';
-import { UserDomainEventNativePublisher } from '../../../../src/user/domain/infrastructure/UserDomainEventNativePublisher';
+import { UserDomainEventNativeListener } from '../../../../src/user/domain/infrastructure/events/UserDomainEventNativeListener';
+import { UserDomainEventNativePublisher } from '../../../../src/user/domain/infrastructure/events/UserDomainEventNativePublisher';
 import { UserConfiguration } from '../../../../src/user/domain/UserConfiguration';
 import { UserFacade } from '../../../../src/user/domain/UserFacade';
 

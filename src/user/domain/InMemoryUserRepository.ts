@@ -19,10 +19,10 @@ export class InMemoryUserRepository
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
-    if (this.alreadyExists(user.toDto().email)) {
+    if (this.alreadyExists(user.toSnapShot().email)) {
       throw new BadRequestException('Email already used');
     }
-    this.map.set(user.toDto().id, user);
+    this.map.set(user.toSnapShot().id, user);
     return Promise.resolve(true);
   }
 
@@ -32,6 +32,12 @@ export class InMemoryUserRepository
       throw new NotFoundException('User not found');
     }
     return Promise.resolve(user);
+  }
+
+  async update(user: User): Promise<boolean> {
+    this.map.set(user.toSnapShot().id, user);
+    // return Promise.resolve(true);
+    return true;
   }
 
   async delete(id: string): Promise<boolean> {
@@ -58,16 +64,10 @@ export class InMemoryUserRepository
     return Promise.resolve({ password: userFound.password });
   }
 
-  async update(user: User): Promise<boolean> {
-    this.map.set(user.toDto().id, user);
-    // return Promise.resolve(true);
-    return true;
-  }
-
   private mapToArray = (): UserDto[] => {
     const users: UserDto[] = [];
     this.map.forEach((user) => {
-      users.push(user.toDto());
+      users.push(user.toSnapShot());
     });
     return users;
   };
@@ -123,6 +123,6 @@ export class InMemoryUserRepository
 
   private alreadyExists = (email: string): boolean => {
     const users = this.mapToEntityArray();
-    return users.some((user: User) => user.toDto().email === email);
+    return users.some((user: User) => user.toSnapShot().email === email);
   };
 }
