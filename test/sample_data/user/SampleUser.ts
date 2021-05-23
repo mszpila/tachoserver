@@ -6,23 +6,23 @@ import { SAMPLE_NEW_USER_MAP } from './SAMPLE_NEW_USER_MAP';
 export class SampleUser {
   static sampleNewUser(properties = {}): UserDto {
     const sample = Object.assign({}, SAMPLE_NEW_USER_MAP, properties);
-    return new UserDto(
-      sample.id,
-      sample.firstName,
-      sample.lastName,
-      sample.email,
-      sample.password,
-      sample.isVerified,
-    );
+    return {
+      id: sample.id,
+      firstName: sample.firstName,
+      lastName: sample.lastName,
+      email: sample.email,
+      password: sample.password,
+      isVerified: sample.isVerified,
+    };
   }
 
   static sampleGetUser(user: UserDto): GetUserDto {
-    return new GetUserDto(
-      user.id,
-      user.firstName,
-      user.lastName,
-      user.email,
-      user.isVerified,
-    );
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      isVerified: user.isVerified,
+    };
   }
 }
