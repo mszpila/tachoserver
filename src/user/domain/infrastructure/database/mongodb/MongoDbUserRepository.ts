@@ -50,7 +50,7 @@ export class MongoDbUserRepository
   async update(user: User): Promise<boolean> {
     await this.repository.replaceOne(
       { _id: stringIdToBinary(user.toSnapShot().id) },
-      user,
+      fromEntityToBJSON(user),
     );
     return Promise.resolve(true);
   }

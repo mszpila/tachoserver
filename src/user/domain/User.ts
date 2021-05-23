@@ -1,16 +1,17 @@
+import { Uuid } from '../../shared/domain/Uuid';
 import { UserEmail } from './UserEmail';
-import { UserName } from './UserName';
+import { UserName, UserNameTypes } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
 // import { UserDto } from './dto/UserDto';
 import { UserSnapshot } from './UserSnapshot';
 
 export class User {
-  private id: string;
-  private firstName: string;
-  private lastName: string;
-  private email: string;
-  private password: string;
+  private id: Uuid;
+  private firstName: UserName;
+  private lastName: UserName;
+  private email: UserEmail;
+  private password: UserPassword;
   private isVerified: boolean;
   private isEmailVerified: boolean;
   private userRoles: UserRole[];
@@ -23,11 +24,11 @@ export class User {
   }
 
   private constructor(userSnapshot: UserSnapshot) {
-    this.id = userSnapshot.id;
-    this.firstName = userSnapshot.firstName;
-    this.lastName = userSnapshot.lastName;
-    this.email = userSnapshot.email;
-    this.password = userSnapshot.password;
+    this.id = new Uuid(userSnapshot.id);
+    this.firstName = new UserName(userSnapshot.firstName, UserNameTypes.FIRST);
+    this.lastName = new UserName(userSnapshot.lastName, UserNameTypes.LAST);
+    this.email = new UserEmail(userSnapshot.email);
+    this.password = UserPassword.restoreHashedPassword(userSnapshot.password);
     this.isVerified = userSnapshot.isVerified;
     this.isEmailVerified = userSnapshot.isEmailVerified;
     this.userRoles = userSnapshot.userRoles;
@@ -49,11 +50,11 @@ export class User {
 
   toSnapShot(): UserSnapshot {
     return new UserSnapshot(
-      this.id,
-      this.firstName,
-      this.lastName,
-      this.email,
-      this.password,
+      this.id.toString(),
+      this.firstName.toString(),
+      this.lastName.toString(),
+      this.email.toString(),
+      this.password.toString(),
       this.isVerified,
       this.isEmailVerified,
       this.userRoles,
@@ -64,19 +65,19 @@ export class User {
   }
 
   setFirstName(firstName: UserName): void {
-    this.firstName = firstName.toString();
+    this.firstName = firstName;
   }
 
   setLastName(lastName: UserName): void {
-    this.lastName = lastName.toString();
+    this.lastName = lastName;
   }
 
   setEmail(email: UserEmail): void {
-    this.email = email.toString();
+    this.email = email;
   }
 
   setPassword(password: UserPassword): void {
-    this.password = password.toString();
+    this.password = password;
   }
 
   setIsVerified(isVerified: boolean) {
