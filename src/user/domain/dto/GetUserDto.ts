@@ -1,28 +1,14 @@
-// import { OmitType, PartialType } from '@nestjs/mapped-types';
-// import { UserDto } from './UserDto';
-
-// export class GetUserDto extends PartialType(
-//   OmitType(UserDto, ['password'] as const),
-// ) {}
+import { AutoMap } from '@automapper/classes';
 
 export class GetUserDto {
+  @AutoMap()
   readonly id: string;
+  @AutoMap()
   readonly firstName: string;
+  @AutoMap()
   readonly lastName: string;
+  @AutoMap()
   readonly email: string;
+  @AutoMap()
   readonly isVerified: boolean;
-
-  constructor(
-    id: string,
-    firstName: string,
-    lastName: string,
-    email: string,
-    isVerified: boolean,
-  ) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.isVerified = isVerified;
-  }
 }
