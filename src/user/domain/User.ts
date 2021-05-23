@@ -2,9 +2,8 @@ import { UserEmail } from './UserEmail';
 import { UserName } from './UserName';
 import { UserPassword } from './UserPassword';
 import { UserRole } from './UserRole';
-import { UserDto } from './dto/UserDto';
+// import { UserDto } from './dto/UserDto';
 import { UserSnapshot } from './UserSnapshot';
-import { Uuid } from '../../shared/domain/Uuid';
 
 export class User {
   private id: string;
@@ -14,7 +13,7 @@ export class User {
   private password: string;
   private isVerified: boolean;
   private isEmailVerified: boolean;
-  private userRoles: string[];
+  private userRoles: UserRole[];
   private isBanned: boolean;
   private isDeleted: boolean;
   private lastActive: string;
@@ -38,14 +37,14 @@ export class User {
   }
 
   // toDto(): UserDto {
-  //   return new UserDto(
-  //     this.id,
-  //     this.firstName,
-  //     this.lastName,
-  //     this.email,
-  //     this.password,
-  //     this.isVerified,
-  //   );
+  //   return {
+  //     id: this.id,
+  //     firstName: this.firstName,
+  //     lastName: this.lastName,
+  //     email: this.email,
+  //     password: this.password,
+  //     isVerified: this.isVerified,
+  //   };
   // }
 
   toSnapShot(): UserSnapshot {

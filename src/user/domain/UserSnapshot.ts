@@ -9,7 +9,7 @@ export class UserSnapshot {
     readonly password: string,
     readonly isVerified = false,
     readonly isEmailVerified = false,
-    readonly userRoles = Array<string>(UserRole.USER),
+    readonly userRoles = Array<UserRole>(UserRole.USER),
     readonly isBanned = false,
     readonly isDeleted = false,
     readonly lastActive = new Date().toISOString(),
