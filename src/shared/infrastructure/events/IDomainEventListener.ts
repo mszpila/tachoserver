@@ -1,3 +1,5 @@
+import { DomainEvent } from './IDomainEvent';
+
 export interface DomainEventListener {
-  handle(event: any): void;
+  handle(event: DomainEvent): void;
 }
