@@ -16,6 +16,8 @@ import {
   UserVerificationRequest,
   UserVerified,
 } from '../../shared/infrastructure/events/user/UserEvent';
+import { userMapper } from './service/Mapper';
+import { UserSnapshot } from './UserSnapshot';
 
 @Injectable()
 export class UserFacade {
@@ -34,41 +36,18 @@ export class UserFacade {
 
   async getById(id: string): Promise<GetUserDto> {
     const user = await this.userRepository.findById(id);
-    const userDto = user.toSnapShot();
-    return new GetUserDto(
-      userDto.id,
-      userDto.firstName,
-      userDto.lastName,
-      userDto.email,
-      userDto.isVerified,
-    );
+    return userMapper.map(user.toSnapShot(), GetUserDto, UserSnapshot);
   }
 
   async find(query: FindUserDto): Promise<GetUserDto[]> {
-    const users = await this.userQueryRepository.find(query);
-    const usersArray: GetUserDto[] = [];
-    for (const user of users) {
-      usersArray.push(
-        new GetUserDto(
-          user.id,
-          user.firstName,
-          user.lastName,
-          user.email,
-          user.isVerified,
-        ),
-      );
-    }
-    return usersArray;
+    return await this.userQueryRepository.find(query);
   }
 
   async login(login: LoginDto): Promise<boolean> {
-    const foundUser = await this.userQueryRepository.findByEmailToComparePassowrd(
+    const hashedPassword = await this.userQueryRepository.findByEmailToComparePassowrd(
       login.email,
     );
-    return await UserPassword.comparePassword(
-      login.password,
-      foundUser.password,
-    );
+    return await UserPassword.comparePassword(login.password, hashedPassword);
   }
 
   async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {

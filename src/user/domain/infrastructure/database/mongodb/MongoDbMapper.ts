@@ -2,6 +2,13 @@ import { GetUserDto } from '../../../dto/GetUserDto';
 import { User } from '../../../User';
 import { MongoDbUserSnapshot } from './MongoDbUserSnapshot';
 import { from as stringIdToBinary } from 'uuid-mongodb';
+import { userMapper } from '../../../../domain/service/Mapper';
+import { mapFrom } from '@automapper/core';
+
+userMapper.createMap(MongoDbUserSnapshot, GetUserDto).forMember(
+  (destination) => destination.id,
+  mapFrom((source) => stringIdToBinary(source._id).toString()),
+);
 
 export const fromEntityToBJSON = (userEntity: User): MongoDbUserSnapshot => {
   const userToSave = {
@@ -24,11 +31,5 @@ export const fromBJSONToEntity = (userBJSON: MongoDbUserSnapshot): User => {
 export const fromBJSONToGetUserDto = (
   userBJSON: MongoDbUserSnapshot,
 ): GetUserDto => {
-  return new GetUserDto(
-    stringIdToBinary(userBJSON._id).toString(),
-    userBJSON.firstName,
-    userBJSON.lastName,
-    userBJSON.email,
-    userBJSON.isVerified,
-  );
+  return userMapper.map(userBJSON, GetUserDto, MongoDbUserSnapshot);
 };
