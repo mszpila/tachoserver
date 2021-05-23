@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { UserFacade } from '../../../src/user/domain/UserFacade';
 import { moduleInitialization } from './helpers/moduleInit';
 import { SampleUser } from '../../sample_data/user/SampleUser';
-import { LoginDto } from '../../../src/user/domain/dto/LoginDto';
+// import { LoginDto } from '../../../src/user/domain/dto/LoginDto';
 import { UserDto } from '../../../src/user/domain/dto/UserDto';
 
 let app: INestApplication;
@@ -51,7 +51,7 @@ describe('/POST', () => {
   test('successfull log in', async () => {
     return request(app.getHttpServer())
       .post('/users/login')
-      .send(new LoginDto(JohnMarston.email, JohnMarston.password))
+      .send({ email: JohnMarston.email, password: JohnMarston.password })
       .expect(201);
   });
 });
