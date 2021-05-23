@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { InjectCollection } from 'nest-mongodb';
 import { FindUserDto } from '../../../dto/FindUserDto';
-import { PassowrdCompareDto } from '../../../dto/PasswordCompareDto';
 import { UserQueryRepository } from '../../../IUserQueryRepository';
 import { UserRepository } from '../../../IUserRepository';
 import { User } from '../../../User';
@@ -77,14 +76,12 @@ export class MongoDbUserRepository
     return foundUsers.map((user) => fromBJSONToGetUserDto(user));
   }
 
-  async findByEmailToComparePassowrd(
-    email: string,
-  ): Promise<PassowrdCompareDto> {
+  async findByEmailToComparePassowrd(email: string): Promise<string> {
     const userFound: UserSnapshot = await this.repository.findOne({ email });
     if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return new PassowrdCompareDto(userFound.password);
+    return userFound.password;
   }
 
   private alreadyExists = async (email: string): Promise<boolean> => {
