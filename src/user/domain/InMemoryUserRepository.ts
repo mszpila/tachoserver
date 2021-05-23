@@ -3,13 +3,10 @@ import { UserRepository } from './IUserRepository';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FindUserDto } from './dto/FindUserDto';
-// import { UserUpdateDto } from './dto/UpdateDto';
-import { UserDto } from './dto/UserDto';
-import { PassowrdCompareDto } from './dto/PasswordCompareDto';
-
-// interface obj {
-//   [key: string]: string;
-// }
+// import { UserDto } from './dto/UserDto';
+import { userMapper } from './service/Mapper';
+import { GetUserDto } from './dto/GetUserDto';
+import { UserSnapshot } from './UserSnapshot';
 
 export class InMemoryUserRepository
   implements UserRepository, UserQueryRepository {
@@ -23,7 +20,7 @@ export class InMemoryUserRepository
       throw new BadRequestException('Email already used');
     }
     this.map.set(user.toSnapShot().id, user);
-    return Promise.resolve(true);
+    return true;
   }
 
   async findById(id: string): Promise<User> {
@@ -31,41 +28,46 @@ export class InMemoryUserRepository
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return Promise.resolve(user);
+    return user;
   }
 
   async update(user: User): Promise<boolean> {
     this.map.set(user.toSnapShot().id, user);
-    // return Promise.resolve(true);
     return true;
   }
 
   async delete(id: string): Promise<boolean> {
     this.map.delete(id);
-    return Promise.resolve(true);
+    return true;
   }
 
-  async find(query: FindUserDto): Promise<UserDto[]> {
+  async find(query: FindUserDto): Promise<GetUserDto[]> {
     const users = this.mapToArray();
     const usersFiltered = this.findFilter(users, query);
     this.findSort(usersFiltered, query);
+    const userPage = this.findPage(usersFiltered, query);
+    return userMapper.mapArray(userPage, GetUserDto, UserSnapshot);
+    // console.log(userPage, 'userPage');
 
-    return await Promise.resolve(this.findSlice(usersFiltered, query));
+    // return userPage.map((page) => {
+    //   console.log(page, 'page');
+    //   return userMapper.map(page, GetUserDto, UserSnapshot);
+    // });
   }
 
-  async findByEmailToComparePassowrd(
-    email: string,
-  ): Promise<PassowrdCompareDto> {
-    const users: UserDto[] = this.mapToArray();
-    const userFound = users.filter((user: UserDto) => user.email === email)[0];
+  async findByEmailToComparePassowrd(email: string): Promise<string> {
+    const users: UserSnapshot[] = this.mapToArray();
+    const userFound = users.filter(
+      (user: UserSnapshot) => user.email === email,
+    )[0];
     if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return Promise.resolve({ password: userFound.password });
+    return userFound.password;
   }
 
-  private mapToArray = (): UserDto[] => {
-    const users: UserDto[] = [];
+  private mapToArray = (): UserSnapshot[] => {
+    const users: UserSnapshot[] = [];
     this.map.forEach((user) => {
       users.push(user.toSnapShot());
     });
@@ -80,11 +82,14 @@ export class InMemoryUserRepository
     return users;
   };
 
-  private findFilter = (users: UserDto[], query: FindUserDto): UserDto[] => {
-    return users.filter((user: UserDto) => {
+  private findFilter = (
+    users: UserSnapshot[],
+    query: FindUserDto,
+  ): UserSnapshot[] => {
+    return users.filter((user: UserSnapshot) => {
       if (
-        user.firstName.toLowerCase().includes(query.name) ||
-        user.lastName.toLowerCase().includes(query.name)
+        user.firstName.toLowerCase().includes(query.name || '') ||
+        user.lastName.toLowerCase().includes(query.name || '')
       ) {
         return !query.isVerified || user.isVerified;
       }
@@ -92,33 +97,39 @@ export class InMemoryUserRepository
     });
   };
 
-  private findSort = (users: UserDto[], query: FindUserDto): UserDto[] => {
+  private findSort = (
+    users: UserSnapshot[],
+    query: FindUserDto,
+  ): UserSnapshot[] => {
     switch (query.sort) {
       case 'fnd':
         return users
-          .sort((a: UserDto, b: UserDto) =>
+          .sort((a: UserSnapshot, b: UserSnapshot) =>
             a.firstName.localeCompare(b.firstName),
           )
           .reverse();
       case 'lna':
-        return users.sort((a: UserDto, b: UserDto) =>
+        return users.sort((a: UserSnapshot, b: UserSnapshot) =>
           a.lastName.localeCompare(b.lastName),
         );
       case 'lnd':
         return users
-          .sort((a: UserDto, b: UserDto) =>
+          .sort((a: UserSnapshot, b: UserSnapshot) =>
             a.lastName.localeCompare(b.lastName),
           )
           .reverse();
       default:
-        return users.sort((a: UserDto, b: UserDto) =>
+        return users.sort((a: UserSnapshot, b: UserSnapshot) =>
           a.firstName.localeCompare(b.firstName),
         );
     }
   };
 
-  private findSlice = (users: UserDto[], query: FindUserDto): UserDto[] => {
-    return users.slice(query.offset, query.offset + query.limit);
+  private findPage = (
+    users: UserSnapshot[],
+    query: FindUserDto,
+  ): UserSnapshot[] => {
+    return users.slice(query.offset || 0, query.limit || 20);
   };
 
   private alreadyExists = (email: string): boolean => {
