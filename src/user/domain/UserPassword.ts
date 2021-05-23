@@ -38,6 +38,11 @@ export class UserPassword {
     }
   }
 
+  static restoreHashedPassword(password: string): UserPassword {
+    if (UserPassword.isValidPassword(password))
+      return new UserPassword(password);
+  }
+
   toString(): string {
     return this.hashedPassword;
   }
