@@ -18,6 +18,7 @@ import {
 } from '../../shared/infrastructure/events/user/UserEvent';
 import { userMapper } from './service/Mapper';
 import { UserSnapshot } from './UserSnapshot';
+import { UserEmail } from './UserEmail';
 
 @Injectable()
 export class UserFacade {
@@ -44,6 +45,7 @@ export class UserFacade {
   }
 
   async login(login: LoginDto): Promise<boolean> {
+    UserEmail.isValidEmail(login.email);
     const hashedPassword = await this.userQueryRepository.findByEmailToComparePassowrd(
       login.email,
     );
