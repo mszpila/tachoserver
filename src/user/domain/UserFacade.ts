@@ -19,6 +19,7 @@ import {
 import { userMapper } from './service/Mapper';
 import { UserSnapshot } from './UserSnapshot';
 import { UserEmail } from './UserEmail';
+import { User } from './User';
 
 @Injectable()
 export class UserFacade {
@@ -30,7 +31,7 @@ export class UserFacade {
     private creator: UserCreator,
   ) {}
 
-  async register(userDto: UserDto): Promise<boolean> {
+  async register(userDto: UserDto): Promise<UserSnapshot> {
     const user = await this.creator.from(userDto);
     return await this.userRepository.save(user);
   }
@@ -44,12 +45,13 @@ export class UserFacade {
     return await this.userQueryRepository.find(query);
   }
 
-  async login(login: LoginDto): Promise<boolean> {
+  async login(login: LoginDto): Promise<UserSnapshot> {
     UserEmail.isValidEmail(login.email);
-    const hashedPassword = await this.userQueryRepository.findByEmailToComparePassowrd(
+    const foundUser: UserSnapshot = await this.userRepository.findByEmail(
       login.email,
     );
-    return await UserPassword.comparePassword(login.password, hashedPassword);
+    if (await UserPassword.comparePassword(login.password, foundUser.password))
+      return foundUser;
   }
 
   async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {

@@ -15,6 +15,7 @@ import { MongoDbUserSnapshot } from './MongoDbUserSnapshot';
 import {
   fromBJSONToEntity,
   fromBJSONToGetUserDto,
+  fromBJSONToUserSnapshot,
   fromEntityToBJSON,
 } from './MongoDbMapper';
 import { from as stringIdToBinary } from 'uuid-mongodb';
@@ -26,15 +27,18 @@ export class MongoDbUserRepository
     @InjectCollection('users') private readonly repository: mongo.Collection,
   ) {}
 
-  async save(user: User): Promise<boolean> {
+  async save(user: User): Promise<UserSnapshot> {
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
+    // Since in the below if statement we state explicitly that a user with this email already exists,
+    // it might a good idea to implement a mechanism preventing attackers from brute-forcing our
+    // API in order to get a list of registered emails
     if (await this.alreadyExists(user.toSnapShot().email)) {
       throw new BadRequestException('Email already used');
     }
     await this.repository.insertOne(fromEntityToBJSON(user));
-    return Promise.resolve(true);
+    return user.toSnapShot();
   }
 
   async findById(id: string): Promise<User> {
@@ -76,12 +80,14 @@ export class MongoDbUserRepository
     return foundUsers.map((user) => fromBJSONToGetUserDto(user));
   }
 
-  async findByEmailToComparePassowrd(email: string): Promise<string> {
-    const userFound: UserSnapshot = await this.repository.findOne({ email });
+  async findByEmail(email: string): Promise<UserSnapshot> {
+    const userFound: MongoDbUserSnapshot = await this.repository.findOne({
+      email,
+    });
     if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return userFound.password;
+    return fromBJSONToUserSnapshot(userFound);
   }
 
   private alreadyExists = async (email: string): Promise<boolean> => {

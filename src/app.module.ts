@@ -1,26 +1,32 @@
 import { Module } from '@nestjs/common';
-// import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 import { MongoModule } from 'nest-mongodb';
-
-// const dbConfig = {
-//   provide: 'CONFIG',
-//   useFactory: () => {
-//     return process.env.NODE_ENV === 'development' ? 'devConfig' : 'prodConfig';
-//   },
-// };
+import { AuthenticationModule } from './shared/authentication/authentication.module';
+import { validationSchema } from './shared/config/validationSchema';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({ isGlobal: true }),
-    EventEmitterModule.forRoot({ global: true }),
-    MongoModule.forRoot('mongodb://localhost', 'tachodev', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', './src/shared/authentication/.env'],
+      validationSchema,
     }),
+    EventEmitterModule.forRoot({ global: true }),
+    MongoModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('DB_URI'),
+        dbName: config.get<string>('DB_NAME'),
+        clientOptions: {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    AuthenticationModule,
     UserModule,
   ],
-  // providers: [dbConfig],
 })
 export class AppModule {}

@@ -4,6 +4,7 @@ import { MongoDbUserSnapshot } from './MongoDbUserSnapshot';
 import { from as stringIdToBinary } from 'uuid-mongodb';
 import { userMapper } from '../../../../domain/service/Mapper';
 import { mapFrom } from '@automapper/core';
+import { UserSnapshot } from '../../../UserSnapshot';
 
 userMapper.createMap(MongoDbUserSnapshot, GetUserDto).forMember(
   (destination) => destination.id,
@@ -32,4 +33,15 @@ export const fromBJSONToGetUserDto = (
   userBJSON: MongoDbUserSnapshot,
 ): GetUserDto => {
   return userMapper.map(userBJSON, GetUserDto, MongoDbUserSnapshot);
+};
+
+export const fromBJSONToUserSnapshot = (
+  userBJSON: MongoDbUserSnapshot,
+): UserSnapshot => {
+  const userSnapshot = {
+    ...userBJSON,
+    id: stringIdToBinary(userBJSON._id).toString(),
+  };
+  delete userSnapshot._id;
+  return userSnapshot;
 };

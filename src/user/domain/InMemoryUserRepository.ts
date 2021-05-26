@@ -12,7 +12,7 @@ export class InMemoryUserRepository
   implements UserRepository, UserQueryRepository {
   private map: Map<string, User> = new Map<string, User>();
 
-  async save(user: User): Promise<boolean> {
+  async save(user: User): Promise<UserSnapshot> {
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
@@ -20,7 +20,7 @@ export class InMemoryUserRepository
       throw new BadRequestException('Email already used');
     }
     this.map.set(user.toSnapShot().id, user);
-    return true;
+    return user.toSnapShot();
   }
 
   async findById(id: string): Promise<User> {
@@ -47,15 +47,9 @@ export class InMemoryUserRepository
     this.findSort(usersFiltered, query);
     const userPage = this.findPage(usersFiltered, query);
     return userMapper.mapArray(userPage, GetUserDto, UserSnapshot);
-    // console.log(userPage, 'userPage');
-
-    // return userPage.map((page) => {
-    //   console.log(page, 'page');
-    //   return userMapper.map(page, GetUserDto, UserSnapshot);
-    // });
   }
 
-  async findByEmailToComparePassowrd(email: string): Promise<string> {
+  async findByEmail(email: string): Promise<UserSnapshot> {
     const users: UserSnapshot[] = this.mapToArray();
     const userFound = users.filter(
       (user: UserSnapshot) => user.email === email,
@@ -63,7 +57,7 @@ export class InMemoryUserRepository
     if (!userFound) {
       throw new NotFoundException('Wrong credentials');
     }
-    return userFound.password;
+    return userFound;
   }
 
   private mapToArray = (): UserSnapshot[] => {

@@ -4,12 +4,14 @@ import { INestApplication } from '@nestjs/common';
 import { UserFacade } from '../../../src/user/domain/UserFacade';
 import { moduleInitialization } from './helpers/moduleInit';
 import { SampleUser } from '../../sample_data/user/SampleUser';
-// import { LoginDto } from '../../../src/user/domain/dto/LoginDto';
 import { UserDto } from '../../../src/user/domain/dto/UserDto';
+import * as cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 
 let app: INestApplication;
 let userFacade: UserFacade;
 // let mongodb: MongoClient;
+let config: ConfigService;
 
 const JohnMarston = SampleUser.sampleNewUser();
 const AdrianMonk: UserDto = SampleUser.sampleNewUser({
@@ -31,16 +33,19 @@ beforeAll(async () => {
   const module = await moduleInitialization();
   app = module.createNestApplication();
   await app.init();
+  app.use(cookieParser());
   userFacade = module.get(UserFacade);
   // mongodb = await module.get(MongoModule);
+  config = module.get(ConfigService);
 });
 
 describe('/POST', () => {
   test('successfull registration', async () => {
-    await request(app.getHttpServer())
-      .post('/users/register')
+    const registrationRequest = await request(app.getHttpServer())
+      .post('/auth/register')
       .send(JohnMarston)
       .expect(201);
+    expect(registrationRequest.body.access_token).toBeDefined();
     return await request(app.getHttpServer())
       .get(`/users/${JohnMarston.id}`)
       .send()
@@ -49,10 +54,18 @@ describe('/POST', () => {
   });
 
   test('successfull log in', async () => {
-    return request(app.getHttpServer())
-      .post('/users/login')
+    await request(app.getHttpServer()).get('/auth/test').expect(401);
+    const loginRequest = await request(app.getHttpServer())
+      .post('/auth/login')
       .send({ email: JohnMarston.email, password: JohnMarston.password })
       .expect(201);
+    expect(loginRequest.body.access_token).toBeDefined();
+    const token = loginRequest.body.access_token;
+    return request(app.getHttpServer())
+      .get('/auth/test')
+      .set('Authorization', 'Bearer ' + token)
+      .expect(200)
+      .expect({ userId: JohnMarston.id, roles: ['USER'] });
   });
 });
 
@@ -102,14 +115,13 @@ describe('/DELETE', () => {
 });
 
 afterAll(async () => {
-  // mongodb.db('tachotestUser').dropDatabase();
   (
-    await mongo.connect('mongodb://localhost', {
+    await mongo.connect(config.get<string>('DB_URI_TEST'), {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
   )
-    .db('tachotestUser')
+    .db(config.get<string>('DB_NAME_TEST'))
     .dropDatabase();
   await app.close();
 });
