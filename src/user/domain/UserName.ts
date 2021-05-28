@@ -37,7 +37,11 @@ export class UserName {
   }
 
   private static format(name: string): string {
-    const lowerCase = name.toLowerCase();
-    return lowerCase.charAt(0).toUpperCase() + lowerCase.slice(1);
+    const trimmed = name.replace(/\s+/g, ' ').trim();
+    return trimmed
+      .split(' ')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+    // return lowerCase.charAt(0).toUpperCase() + lowerCase.slice(1);
   }
 }

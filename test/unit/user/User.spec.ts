@@ -112,6 +112,24 @@ describe('registration', () => {
     );
   });
 
+  test('should correct inputted first and last name', async () => {
+    // given
+    const userToTrim = SampleUser.sampleNewUser({
+      id: '',
+      firstName: '  rick  ',
+      lastName: '  sanchez   C-137  ',
+      email: 'rick.sanchez@gmail.com',
+    });
+    // when
+    const trimmedUser = await userFacade.register(userToTrim);
+    // then
+    expect(await userFacade.getById(trimmedUser.id)).toMatchObject({
+      firstName: 'Rick',
+      lastName: 'Sanchez C-137',
+    });
+    await userFacade.deleteById(trimmedUser.id);
+  });
+
   test('should not register a new user due to bad id (optional param)', async () => {
     // given
     const badUser = SampleUser.sampleNewUser({
@@ -191,9 +209,9 @@ describe('get', () => {
     // when
     const foundUsers = await userFacade.find({});
     // then
-    expect(foundUsers[2]).toEqual(SampleUser.sampleGetUser(JohnMarston));
-    expect(foundUsers[1]).toEqual(SampleUser.sampleGetUser(AnakinSkywalker));
     expect(foundUsers[0]).toEqual(SampleUser.sampleGetUser(AdrianMonk));
+    expect(foundUsers[1]).toEqual(SampleUser.sampleGetUser(AnakinSkywalker));
+    expect(foundUsers[2]).toEqual(SampleUser.sampleGetUser(JohnMarston));
   });
 
   test('should get the sorted first name desc users list', async () => {
