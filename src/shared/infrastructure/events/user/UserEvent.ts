@@ -27,3 +27,16 @@ export class UserVerified implements DomainEvent {
     return this.data;
   }
 }
+
+interface UserRegisteredData {
+  firstName: string;
+  email: string;
+}
+
+export class UserRegistered implements DomainEvent {
+  constructor(private data: UserRegisteredData) {}
+
+  getData(): UserRegisteredData {
+    return this.data;
+  }
+}
