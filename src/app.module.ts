@@ -5,13 +5,16 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 import { MongoModule } from 'nest-mongodb';
 import { AuthenticationModule } from './shared/authentication/authentication.module';
-import { validationSchema } from './shared/config/validationSchema';
+import { validationSchema } from '../config/validationSchema';
+import { envFilePath } from '../config/envFilePath';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', './src/shared/authentication/.env'],
+      envFilePath,
+      // envFilePath: ['.env', './src/shared/authentication/.env'],
       validationSchema,
     }),
     ThrottlerModule.forRootAsync({
@@ -35,6 +38,7 @@ import { validationSchema } from './shared/config/validationSchema';
     }),
     AuthenticationModule,
     UserModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

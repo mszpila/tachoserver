@@ -1,10 +1,10 @@
-import { EmailService } from '../IEmailService';
+import { EmailService } from '../../domain/IEmailService';
 
 export class MailChimp implements EmailService {
   sendSingleEmail(data: any): void {
     throw new Error('Method not implemented.');
   }
-  sendManyEmails(data: any): void {
+  sendMultipleEmails(data: any): void {
     throw new Error('Method not implemented.');
   }
 }

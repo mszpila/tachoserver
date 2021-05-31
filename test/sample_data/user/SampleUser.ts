@@ -1,11 +1,13 @@
 // https://youtu.be/kW-k9UXhGqw?t=5783
+import { userMapper } from '../../../src/user/domain/service/Mapper';
+import { UserSnapshot } from '../../../src/user/domain/UserSnapshot';
 import { GetUserDto } from '../../../src/user/domain/dto/GetUserDto';
-import { UserDto } from '../../../src/user/domain/dto/UserDto';
-import { SAMPLE_NEW_USER_MAP } from './SAMPLE_NEW_USER_MAP';
+import { CreateUserDto } from '../../../src/user/domain/dto/UserDto';
+import { SAMPLE_USER_MAP } from './SAMPLE_NEW_USER_MAP';
 
 export class SampleUser {
-  static sampleNewUser(properties = {}): UserDto {
-    const sample = Object.assign({}, SAMPLE_NEW_USER_MAP, properties);
+  static create(properties = {}): UserSnapshot {
+    const sample = Object.assign({}, SAMPLE_USER_MAP, properties);
     return {
       id: sample.id,
       firstName: sample.firstName,
@@ -13,16 +15,20 @@ export class SampleUser {
       email: sample.email,
       password: sample.password,
       isVerified: sample.isVerified,
+      isEmailVerified: sample.isEmailVerified,
+      userRoles: sample.userRoles,
+      isBanned: sample.isBanned,
+      isDeleted: sample.isDeleted,
+      lastActive: sample.lastActive,
     };
   }
 
-  static sampleGetUser(user: UserDto): GetUserDto {
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      isVerified: user.isVerified,
-    };
+  static sampleNewUser(properties = {}): CreateUserDto {
+    const sample = Object.assign({}, SAMPLE_USER_MAP, properties);
+    return userMapper.map(sample, CreateUserDto, UserSnapshot);
+  }
+
+  static sampleGetUser(user: UserSnapshot): GetUserDto {
+    return userMapper.map(user, GetUserDto, UserSnapshot);
   }
 }

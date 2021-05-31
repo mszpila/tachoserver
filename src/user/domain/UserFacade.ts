@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { FindUserDto } from './dto/FindUserDto';
 import { LoginDto } from './dto/LoginDto';
 import { UserUpdateDto } from './dto/UserUpdateDto';
-import { UserDto } from './dto/UserDto';
+import { CreateUserDto } from './dto/UserDto';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
 import { UserPassword } from './UserPassword';
@@ -11,8 +11,12 @@ import { UserUpdater } from './UserUpdater';
 import { UserCreator } from './UserCreator';
 import { GetUserDto } from './dto/GetUserDto';
 import { DomainEventPublisher } from '../../shared/infrastructure/events/IDomainEventPublisher';
-import { VERIFICATION_REQUESTED } from '../../shared/infrastructure/events/user/EventTopic';
 import {
+  USER_REGISTERED,
+  VERIFICATION_REQUESTED,
+} from '../../shared/infrastructure/events/user/EventTopic';
+import {
+  UserRegistered,
   UserVerificationRequest,
   UserVerified,
 } from '../../shared/infrastructure/events/user/UserEvent';
@@ -31,9 +35,18 @@ export class UserFacade {
     private creator: UserCreator,
   ) {}
 
-  async register(userDto: UserDto): Promise<UserSnapshot> {
+  async register(userDto: CreateUserDto): Promise<UserSnapshot> {
     const user = await this.creator.from(userDto);
-    return await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    this.domainEventPublisher.publish(
+      USER_REGISTERED,
+      new UserRegistered({
+        id: savedUser.id,
+        email: savedUser.email,
+        firstName: savedUser.firstName,
+      }),
+    );
+    return savedUser;
   }
 
   async getById(id: string): Promise<GetUserDto> {

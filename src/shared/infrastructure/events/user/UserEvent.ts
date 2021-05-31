@@ -29,6 +29,7 @@ export class UserVerified implements DomainEvent {
 }
 
 interface UserRegisteredData {
+  id: string;
   firstName: string;
   email: string;
 }

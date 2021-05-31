@@ -21,7 +21,7 @@ import { FindUserDto } from '../dto/FindUserDto';
 import { GetUserDto } from '../dto/GetUserDto';
 import { LoginDto } from '../dto/LoginDto';
 import { UploadDocumentDto } from '../dto/UploadDocumentDto';
-import { UserDto } from '../dto/UserDto';
+import { CreateUserDto } from '../dto/UserDto';
 import { UserUpdateDto } from '../dto/UserUpdateDto';
 import { UserFacade } from '../UserFacade';
 
@@ -43,7 +43,7 @@ export class UserController {
   }
 
   @Post('auth/register')
-  async register(@Body() userDto: UserDto): Promise<any> {
+  async register(@Body() userDto: CreateUserDto): Promise<any> {
     const user = await this.userFacade.register(userDto);
     return await this.authService.getAccessToken(user.id, user.userRoles);
   }

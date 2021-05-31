@@ -1,4 +1,4 @@
-import { UserDto } from '../../../src/user/domain/dto/UserDto';
+// import { CreateUserDto } from '../../../src/user/domain/dto/UserDto';
 import { SampleUser } from '../../sample_data/user/SampleUser';
 import {
   USER_VERIFIED,
@@ -9,17 +9,18 @@ import {
   UserVerified,
 } from '../../../src/shared/infrastructure/events/user/UserEvent';
 import { userFacade, eventDomainPublisher } from './helpers/moduleInit';
+import { UserSnapshot } from '../../../src/user/domain/UserSnapshot';
 
 // creating sample users
-const JohnMarston: UserDto = SampleUser.sampleNewUser();
-const AdrianMonk: UserDto = SampleUser.sampleNewUser({
+const JohnMarston: UserSnapshot = SampleUser.create();
+const AdrianMonk: UserSnapshot = SampleUser.create({
   id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
   firstName: 'Adrian',
   lastName: 'Monk',
   email: 'a.monk@gmail.com',
   password: '57*-?#xMNL',
 });
-let AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
+let AnakinSkywalker: UserSnapshot = SampleUser.create({
   id: '15605809-1557-49fe-a58d-c861d2291689',
   firstName: 'Anakin',
   lastName: 'Skywalker',
@@ -255,6 +256,7 @@ describe('get', () => {
     expect(foundUsers).not.toContainEqual(
       SampleUser.sampleGetUser(JohnMarston),
     );
+    expect(foundUsers).toContainEqual(SampleUser.sampleGetUser(AdrianMonk));
     expect(foundUsers).toContainEqual(
       SampleUser.sampleGetUser(AnakinSkywalker),
     );
@@ -352,10 +354,6 @@ describe('update', () => {
     // given
     const prevPassword = AnakinSkywalker.password;
     AnakinSkywalker = { ...AnakinSkywalker, password: '^>3HkMVZ' };
-    // const updateDto: UserUpdateDto = { password: AnakinSkywalker.password };
-    // UserUpdateDto.builder()
-    //   .withPassword(AnakinSkywalker.password)
-    //   .build();
 
     // when
     await userFacade.update(AnakinSkywalker.id, {
@@ -382,9 +380,6 @@ describe('update', () => {
     // given
     const prevEmail = AnakinSkywalker.email;
     AnakinSkywalker = { ...AnakinSkywalker, email: 'a.skywalker@gmail.com' };
-    // const updateDto: UserUpdateDto = UserUpdateDto.builder()
-    //   .withEmail(AnakinSkywalker.email)
-    //   .build();
 
     // when
     await userFacade.update(AnakinSkywalker.id, {
@@ -410,9 +405,6 @@ describe('update', () => {
   test('should update the first name', async () => {
     // given
     AnakinSkywalker = { ...AnakinSkywalker, firstName: 'Darth' };
-    // const updateDto: UserUpdateDto = UserUpdateDto.builder()
-    //   .withFirstName(AnakinSkywalker.firstName)
-    //   .build();
 
     // when
     await userFacade.update(AnakinSkywalker.id, {
@@ -428,9 +420,6 @@ describe('update', () => {
   test('should update the last name', async () => {
     // given
     AnakinSkywalker = { ...AnakinSkywalker, lastName: 'Vader' };
-    // const updateDto: UserUpdateDto = UserUpdateDto.builder()
-    //   .withLastName(AnakinSkywalker.lastName)
-    //   .build();
 
     // when
     await userFacade.update(AnakinSkywalker.id, {

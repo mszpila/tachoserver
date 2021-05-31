@@ -2,26 +2,29 @@ import * as mongo from 'mongodb';
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { UserFacade } from '../../../src/user/domain/UserFacade';
-import { moduleInitialization } from './helpers/moduleInit';
+import { moduleInitialization } from '../helpers/moduleInit';
 import { SampleUser } from '../../sample_data/user/SampleUser';
-import { UserDto } from '../../../src/user/domain/dto/UserDto';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import { EmailService } from '../../../src/email/domain/EmailService';
+import { UserRegistered } from '../../../src/shared/infrastructure/events/user/UserEvent';
+import { UserSnapshot } from '../../../src/user/domain/UserSnapshot';
 
 let app: INestApplication;
 let userFacade: UserFacade;
 // let mongodb: MongoClient;
 let config: ConfigService;
+let emailService: EmailService;
 
-const JohnMarston = SampleUser.sampleNewUser();
-const AdrianMonk: UserDto = SampleUser.sampleNewUser({
+const JohnMarston: UserSnapshot = SampleUser.create();
+const AdrianMonk: UserSnapshot = SampleUser.create({
   id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
   firstName: 'Adrian',
   lastName: 'Monk',
   email: 'a.monk@gmail.com',
   password: '57*-?#xMNL',
 });
-const AnakinSkywalker: UserDto = SampleUser.sampleNewUser({
+const AnakinSkywalker: UserSnapshot = SampleUser.create({
   id: '15605809-1557-49fe-a58d-c861d2291689',
   firstName: 'Anakin',
   lastName: 'Skywalker',
@@ -37,6 +40,7 @@ beforeAll(async () => {
   userFacade = module.get(UserFacade);
   // mongodb = await module.get(MongoModule);
   config = module.get(ConfigService);
+  emailService = module.get(EmailService);
 });
 
 describe('/POST', () => {
@@ -51,6 +55,25 @@ describe('/POST', () => {
       .send()
       .expect(200)
       .expect({ ...SampleUser.sampleGetUser(JohnMarston) });
+  });
+
+  test('successfull email confirmation', async () => {
+    const token = await emailService.sendRegistrationEmail(
+      new UserRegistered({
+        id: JohnMarston.id,
+        email: JohnMarston.email,
+        firstName: JohnMarston.firstName,
+      }),
+    );
+    await emailService.confirmEmail(token);
+    return await request(app.getHttpServer())
+      .get(`/users/${JohnMarston.id}`)
+      .send()
+      .expect(200)
+      .expect({
+        ...SampleUser.sampleGetUser(JohnMarston),
+        isEmailVerified: true,
+      });
   });
 
   test('successfull log in', async () => {

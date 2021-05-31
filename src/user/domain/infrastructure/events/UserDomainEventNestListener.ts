@@ -4,6 +4,8 @@ import { USER_VERIFIED } from '../../../../shared/infrastructure/events/user/Eve
 import { DomainEventListener } from '../../../../shared/infrastructure/events/IDomainEventListener';
 import { UserFacade } from '../../UserFacade';
 import { UserVerified } from '../../../../shared/infrastructure/events/user/UserEvent';
+import { EMAIL_CONFIRMED } from '../../../../shared/infrastructure/events/email/EventTopic';
+import { EmailConfirmed } from '../../../../shared/infrastructure/events/email/EmailEvent';
 
 @Injectable()
 export class UserDomainEventNestListener implements DomainEventListener {
@@ -12,5 +14,10 @@ export class UserDomainEventNestListener implements DomainEventListener {
   @OnEvent(USER_VERIFIED)
   handle(payload: UserVerified): void {
     this.userFacade.verify(payload);
+  }
+
+  @OnEvent(EMAIL_CONFIRMED)
+  handleEmailConfirmation(payload: EmailConfirmed): void {
+    this.userFacade.confirmEmail(payload.getData().id, true);
   }
 }

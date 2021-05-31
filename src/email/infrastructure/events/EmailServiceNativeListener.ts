@@ -1,8 +1,8 @@
 import { EventEmitter2 } from 'eventemitter2';
-import { USER_REGISTERED } from '../shared/infrastructure/events/user/EventTopic';
-import { DomainEventListener } from '../shared/infrastructure/events/IDomainEventListener';
-import { UserRegistered } from '../shared/infrastructure/events/user/UserEvent';
-import { EmailService } from './IEmailService';
+import { USER_REGISTERED } from '../../../shared/infrastructure/events/user/EventTopic';
+import { DomainEventListener } from '../../../shared/infrastructure/events/IDomainEventListener';
+import { UserRegistered } from '../../../shared/infrastructure/events/user/UserEvent';
+import { EmailService } from '../../domain/EmailService';
 
 export class EmailServiceNativeListener implements DomainEventListener {
   constructor(
@@ -15,6 +15,6 @@ export class EmailServiceNativeListener implements DomainEventListener {
   }
 
   handle(payload: UserRegistered): void {
-    this.emailService.sendSingleEmail(payload);
+    this.emailService.sendRegistrationEmail(payload);
   }
 }

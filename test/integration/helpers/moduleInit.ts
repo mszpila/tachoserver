@@ -2,16 +2,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { MongoModule } from 'nest-mongodb';
-import { validationSchema } from '../../../../src/shared/config/validationSchema';
-import { AuthenticationModule } from '../../../../src/shared/authentication/authentication.module';
-import { UserModule } from '../../../../src/user/user.module';
+import { EmailModule } from '../../../src/email/email.module';
+import { envFilePath } from '../../../config/envFilePath';
+import { validationSchema } from '../../../config/validationSchema';
+import { AuthenticationModule } from '../../../src/shared/authentication/authentication.module';
+import { UserModule } from '../../../src/user/user.module';
 
 const moduleInitialization = async () => {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({
         isGlobal: true,
-        envFilePath: ['.env', './src/shared/authentication/.env'],
+        envFilePath,
         validationSchema,
       }),
       EventEmitterModule.forRoot({ global: true }),
@@ -28,6 +30,7 @@ const moduleInitialization = async () => {
       }),
       AuthenticationModule,
       UserModule,
+      EmailModule,
     ],
   }).compile();
 };

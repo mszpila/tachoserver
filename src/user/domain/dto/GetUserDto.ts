@@ -11,4 +11,6 @@ export class GetUserDto {
   readonly email: string;
   @AutoMap()
   readonly isVerified: boolean;
+  @AutoMap()
+  readonly isEmailVerified: boolean;
 }
