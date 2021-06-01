@@ -1,9 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthenticationService } from './AuthenticationService';
-import { JwtStrategy } from './JwtStrategy';
 import { ConfigService } from '@nestjs/config';
+import { AuthenticationService } from './domain/AuthenticationService';
+import { JwtStrategy } from './jwt/JwtStrategy';
+import { GoogleStrategy } from './oauth/google/GoogleStrategy';
 
 @Global()
 @Module({
@@ -19,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [AuthenticationService, JwtStrategy],
+  providers: [AuthenticationService, JwtStrategy, GoogleStrategy],
   exports: [AuthenticationService],
 })
 export class AuthenticationModule {}

@@ -14,6 +14,7 @@ export class SampleUser {
       lastName: sample.lastName,
       email: sample.email,
       password: sample.password,
+      oauthId: sample.oauthId,
       isVerified: sample.isVerified,
       isEmailVerified: sample.isEmailVerified,
       userRoles: sample.userRoles,

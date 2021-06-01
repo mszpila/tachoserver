@@ -7,23 +7,27 @@ import {
   Delete,
   Query,
   Put,
-  Res,
   UseGuards,
-  Request,
-  HttpStatus,
-  HttpCode,
   Req,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { AuthenticationService } from '../../../shared/authentication/AuthenticationService';
-import { JwtAuthGuard } from '../../../shared/authentication/JwtAuthGuard';
-import { FindUserDto } from '../dto/FindUserDto';
-import { GetUserDto } from '../dto/GetUserDto';
-import { LoginDto } from '../dto/LoginDto';
-import { UploadDocumentDto } from '../dto/UploadDocumentDto';
-import { CreateUserDto } from '../dto/UserDto';
-import { UserUpdateDto } from '../dto/UserUpdateDto';
+import {
+  AuthenticationService,
+  AuthRequest,
+  GoogleAuthGuard,
+  JwtAuthGuard,
+  JwtUserDto,
+  OAuthUserDto,
+} from '../../../shared/authentication';
+import {
+  CreateUserDto,
+  FindUserDto,
+  GetUserDto,
+  LoginDto,
+  UploadDocumentDto,
+  UserUpdateDto,
+} from '../dto';
 import { UserFacade } from '../UserFacade';
+import { UserSnapshot } from '../UserSnapshot';
 
 @Controller()
 export class UserController {
@@ -31,16 +35,6 @@ export class UserController {
     private userFacade: UserFacade,
     private authService: AuthenticationService,
   ) {}
-
-  @Get('users')
-  find(@Query() findUserDto: FindUserDto): Promise<GetUserDto[]> {
-    return this.userFacade.find(findUserDto);
-  }
-
-  @Get('users/:id')
-  findOne(@Param('id') id: string) {
-    return this.userFacade.getById(id);
-  }
 
   @Post('auth/register')
   async register(@Body() userDto: CreateUserDto): Promise<any> {
@@ -52,6 +46,27 @@ export class UserController {
   async login(@Body() loginDto: LoginDto): Promise<any> {
     const user = await this.userFacade.login(loginDto);
     return await this.authService.getAccessToken(user.id, user.userRoles);
+  }
+
+  @Get('auth/google')
+  @UseGuards(GoogleAuthGuard)
+  authenticateWithGoogleOAuth() {}
+
+  @Get('auth/google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  async processGoogleOAuth(@Req() req: AuthRequest<OAuthUserDto>) {
+    const user: UserSnapshot = await this.userFacade.oauth(req.user);
+    return await this.authService.getAccessToken(user.id, user.userRoles);
+  }
+
+  @Get('users')
+  find(@Query() findUserDto: FindUserDto): Promise<GetUserDto[]> {
+    return this.userFacade.find(findUserDto);
+  }
+
+  @Get('users/:id')
+  findOne(@Param('id') id: string) {
+    return this.userFacade.getById(id);
   }
 
   @Put('users/:id')
@@ -74,7 +89,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('auth/test')
-  authTest(@Req() req: any) {
+  authTest(@Req() req: AuthRequest<JwtUserDto>) {
+    const { id, roles }: JwtUserDto = req.user;
     return req.user;
   }
 }

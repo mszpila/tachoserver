@@ -7,6 +7,7 @@ export const SAMPLE_USER_MAP: UserSnapshot = {
   lastName: 'Marston',
   email: 'j.marston@gmail.com',
   password: `'6U'y5v(>1',!`,
+  oauthId: null,
   isVerified: false,
   isEmailVerified: false,
   userRoles: [UserRole.USER],

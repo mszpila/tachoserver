@@ -12,6 +12,7 @@ export class User {
   private lastName: UserName;
   private email: UserEmail;
   private password: UserPassword;
+  private oauthId: string;
   private isVerified: boolean;
   private isEmailVerified: boolean;
   private userRoles: UserRole[];
@@ -29,6 +30,7 @@ export class User {
     this.lastName = new UserName(userSnapshot.lastName, UserNameTypes.LAST);
     this.email = new UserEmail(userSnapshot.email);
     this.password = UserPassword.restoreHashedPassword(userSnapshot.password);
+    this.oauthId = userSnapshot.oauthId;
     this.isVerified = userSnapshot.isVerified;
     this.isEmailVerified = userSnapshot.isEmailVerified;
     this.userRoles = userSnapshot.userRoles;
@@ -55,13 +57,38 @@ export class User {
       this.lastName.toString(),
       this.email.toString(),
       this.password.toString(),
-      this.isVerified,
+      this.oauthId,
       this.isEmailVerified,
       this.userRoles,
+      this.isVerified,
       this.isBanned,
       this.isDeleted,
       this.lastActive,
     );
+  }
+
+  getFirstName(): string {
+    return this.firstName.toString();
+  }
+
+  getLastName(): string {
+    return this.lastName.toString();
+  }
+
+  getEmail(): string {
+    return this.email.toString();
+  }
+
+  getPassword(): string {
+    return this.password.toString();
+  }
+
+  getOAuthId(): string {
+    return this.oauthId;
+  }
+
+  getIsVerified(): boolean {
+    return this.isVerified;
   }
 
   setFirstName(firstName: UserName): void {

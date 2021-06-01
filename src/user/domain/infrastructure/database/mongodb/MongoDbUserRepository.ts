@@ -34,9 +34,9 @@ export class MongoDbUserRepository
     // Since in the below if statement we state explicitly that a user with this email already exists,
     // it might a good idea to implement a mechanism preventing attackers from brute-forcing our
     // API in order to get a list of registered emails
-    if (await this.alreadyExists(user.toSnapShot().email)) {
-      throw new BadRequestException('Email already used');
-    }
+    // if (await this.alreadyExists(user.toSnapShot().email)) {
+    //   throw new BadRequestException('Email already used');
+    // }
     await this.repository.insertOne(fromEntityToBJSON(user));
     return user.toSnapShot();
   }
@@ -46,9 +46,11 @@ export class MongoDbUserRepository
       _id: stringIdToBinary(id),
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      // throw new NotFoundException('User not found');
+      return null;
     }
-    return Promise.resolve(fromBJSONToEntity(user));
+    // return Promise.resolve(fromBJSONToEntity(user));
+    return fromBJSONToEntity(user);
   }
 
   async update(user: User): Promise<boolean> {
@@ -56,12 +58,14 @@ export class MongoDbUserRepository
       { _id: stringIdToBinary(user.toSnapShot().id) },
       fromEntityToBJSON(user),
     );
-    return Promise.resolve(true);
+    // return Promise.resolve(true);
+    return true;
   }
 
   async delete(id: string): Promise<boolean> {
     await this.repository.deleteOne({ _id: stringIdToBinary(id) });
-    return Promise.resolve(true);
+    // return Promise.resolve(true);
+    return true;
   }
 
   async find(query: FindUserDto): Promise<GetUserDto[]> {
@@ -80,14 +84,15 @@ export class MongoDbUserRepository
     return foundUsers.map((user) => fromBJSONToGetUserDto(user));
   }
 
-  async findByEmail(email: string): Promise<UserSnapshot> {
+  async findByEmail(email: string): Promise<User> {
     const userFound: MongoDbUserSnapshot = await this.repository.findOne({
       email,
     });
     if (!userFound) {
-      throw new NotFoundException('Wrong credentials');
+      // throw new NotFoundException('User not found');
+      return null;
     }
-    return fromBJSONToUserSnapshot(userFound);
+    return fromBJSONToEntity(userFound);
   }
 
   private alreadyExists = async (email: string): Promise<boolean> => {

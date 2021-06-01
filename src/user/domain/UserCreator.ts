@@ -1,3 +1,4 @@
+import { OAuthUserDto } from '../../shared/authentication';
 import { Uuid } from '../../shared/domain/Uuid';
 import { CreateUserDto } from './dto/UserDto';
 import { User } from './User';
@@ -28,6 +29,21 @@ export class UserCreator {
         lastName.toString(),
         email.toString(),
         password.toString(),
+      ),
+    );
+  }
+
+  fromOAuth(source: OAuthUserDto): User {
+    const id: Uuid = new Uuid();
+    return User.restore(
+      new UserSnapshot(
+        id.toString(),
+        source.firstName,
+        source.lastName,
+        source.email,
+        null,
+        source.id,
+        true,
       ),
     );
   }

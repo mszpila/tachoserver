@@ -1,15 +1,26 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { FindUserDto } from './dto/FindUserDto';
-import { LoginDto } from './dto/LoginDto';
-import { UserUpdateDto } from './dto/UserUpdateDto';
-import { CreateUserDto } from './dto/UserDto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  FindUserDto,
+  LoginDto,
+  UserUpdateDto,
+  CreateUserDto,
+  UploadDocumentDto,
+  GetUserDto,
+} from './dto';
 import { UserQueryRepository } from './IUserQueryRepository';
 import { UserRepository } from './IUserRepository';
 import { UserPassword } from './UserPassword';
-import { UploadDocumentDto } from './dto/UploadDocumentDto';
 import { UserUpdater } from './UserUpdater';
 import { UserCreator } from './UserCreator';
-import { GetUserDto } from './dto/GetUserDto';
+import { UserSnapshot } from './UserSnapshot';
+import { UserEmail } from './UserEmail';
+import { User } from './User';
+import { userMapper } from './service/Mapper';
+import { OAuthUserDto } from '../../shared/authentication';
 import { DomainEventPublisher } from '../../shared/infrastructure/events/IDomainEventPublisher';
 import {
   USER_REGISTERED,
@@ -20,10 +31,6 @@ import {
   UserVerificationRequest,
   UserVerified,
 } from '../../shared/infrastructure/events/user/UserEvent';
-import { userMapper } from './service/Mapper';
-import { UserSnapshot } from './UserSnapshot';
-import { UserEmail } from './UserEmail';
-import { User } from './User';
 
 @Injectable()
 export class UserFacade {
@@ -36,6 +43,9 @@ export class UserFacade {
   ) {}
 
   async register(userDto: CreateUserDto): Promise<UserSnapshot> {
+    if (await this.userRepository.findByEmail(userDto.email)) {
+      throw new BadRequestException('Email already used');
+    }
     const user = await this.creator.from(userDto);
     const savedUser = await this.userRepository.save(user);
     this.domainEventPublisher.publish(
@@ -49,8 +59,28 @@ export class UserFacade {
     return savedUser;
   }
 
+  async oauth(oauthDto: OAuthUserDto): Promise<UserSnapshot> {
+    const foundUser = await this.userRepository.findByEmail(oauthDto.email);
+    if (!foundUser) {
+      const newUser = this.creator.fromOAuth(oauthDto);
+      return await this.userRepository.save(newUser);
+    }
+    if (!foundUser.getOAuthId()) {
+      throw new BadRequestException(
+        'Email already associated with a custom account',
+      );
+    }
+    if (foundUser.getOAuthId() !== oauthDto.id) {
+      throw new BadRequestException('Wrong credentials');
+    }
+    return this.updater.fromOAuth(oauthDto, foundUser);
+  }
+
   async getById(id: string): Promise<GetUserDto> {
     const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return userMapper.map(user.toSnapShot(), GetUserDto, UserSnapshot);
   }
 
@@ -60,15 +90,22 @@ export class UserFacade {
 
   async login(login: LoginDto): Promise<UserSnapshot> {
     UserEmail.isValidEmail(login.email);
-    const foundUser: UserSnapshot = await this.userRepository.findByEmail(
-      login.email,
-    );
-    if (await UserPassword.comparePassword(login.password, foundUser.password))
-      return foundUser;
+    const foundUser: User = await this.userRepository.findByEmail(login.email);
+    if (!foundUser) throw new BadRequestException('Wrong credentials');
+    if (foundUser.getOAuthId())
+      throw new BadRequestException('Email associated with Google account');
+    if (
+      await UserPassword.comparePassword(
+        login.password,
+        foundUser.getPassword(),
+      )
+    )
+      return foundUser.toSnapShot();
+    else throw new BadRequestException('Wrong credentials');
   }
 
   async update(id: string, userUpdateDto: UserUpdateDto): Promise<boolean> {
-    return await this.updater.execute(id, userUpdateDto);
+    return await this.updater.update(id, userUpdateDto);
   }
 
   async deleteById(id: string): Promise<boolean> {
@@ -80,8 +117,7 @@ export class UserFacade {
     upload: UploadDocumentDto,
   ): Promise<void> {
     const user = await this.userRepository.findById(id);
-    const isVerified = user.toSnapShot().isVerified;
-    if (isVerified) {
+    if (user.getIsVerified()) {
       throw new BadRequestException('User already verified');
     }
     this.domainEventPublisher.publish(

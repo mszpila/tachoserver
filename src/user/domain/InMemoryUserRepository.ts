@@ -16,9 +16,9 @@ export class InMemoryUserRepository
     if (!user) {
       throw new BadRequestException('User cannot be null');
     }
-    if (this.alreadyExists(user.toSnapShot().email)) {
-      throw new BadRequestException('Email already used');
-    }
+    // if (this.alreadyExists(user.toSnapShot().email)) {
+    //   throw new BadRequestException('Email already used');
+    // }
     this.map.set(user.toSnapShot().id, user);
     return user.toSnapShot();
   }
@@ -26,7 +26,8 @@ export class InMemoryUserRepository
   async findById(id: string): Promise<User> {
     const user = this.map.get(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      // throw new NotFoundException('User not found');
+      return null;
     }
     return user;
   }
@@ -49,13 +50,14 @@ export class InMemoryUserRepository
     return userMapper.mapArray(userPage, GetUserDto, UserSnapshot);
   }
 
-  async findByEmail(email: string): Promise<UserSnapshot> {
-    const users: UserSnapshot[] = this.mapToArray();
+  async findByEmail(email: string): Promise<User> {
+    const users: User[] = this.mapToEntityArray();
     const userFound = users.filter(
-      (user: UserSnapshot) => user.email === email,
+      (user: User) => user.getEmail() === email,
     )[0];
     if (!userFound) {
-      throw new NotFoundException('Wrong credentials');
+      // throw new NotFoundException('Wrong credentials');
+      return null;
     }
     return userFound;
   }

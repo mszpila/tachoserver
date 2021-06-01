@@ -25,7 +25,8 @@ export class UserPassword {
   ): Promise<boolean> {
     const result = await bcrypt.compare(plainPassword, hashedPassword);
     if (!result) {
-      throw new BadRequestException('Wrong credentials');
+      // throw new BadRequestException('Wrong credentials');
+      return false;
     }
     return result;
   }

@@ -88,7 +88,7 @@ describe('/POST', () => {
       .get('/auth/test')
       .set('Authorization', 'Bearer ' + token)
       .expect(200)
-      .expect({ userId: JohnMarston.id, roles: ['USER'] });
+      .expect({ id: JohnMarston.id, roles: ['USER'] });
   });
 });
 

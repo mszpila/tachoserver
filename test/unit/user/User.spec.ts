@@ -13,12 +13,15 @@ import { UserSnapshot } from '../../../src/user/domain/UserSnapshot';
 
 // creating sample users
 const JohnMarston: UserSnapshot = SampleUser.create();
-const AdrianMonk: UserSnapshot = SampleUser.create({
-  id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
+let AdrianMonk: UserSnapshot = SampleUser.create({
+  // id: '851f5ee6-59e3-41ca-942b-943e926e21cf',
   firstName: 'Adrian',
   lastName: 'Monk',
   email: 'a.monk@gmail.com',
-  password: '57*-?#xMNL',
+  // password: '57*-?#xMNL',
+  password: null,
+  oauthId: '123',
+  isEmailVerified: true,
 });
 let AnakinSkywalker: UserSnapshot = SampleUser.create({
   id: '15605809-1557-49fe-a58d-c861d2291689',
@@ -27,14 +30,14 @@ let AnakinSkywalker: UserSnapshot = SampleUser.create({
   email: 'skywalker@gmail.com',
   password: 'xk&@fqT5h',
 });
+// const LarryPage: UserSnapshot = SampleUser.create({
+//   firstName: 'Larry',
+//   lastName: 'Page',
+//   email: 'larry.page@gmail.com',
+//   oauthId: '123',
+// });
 
 describe('registration', () => {
-  test('should register a new user', async () => {
-    expect(await userFacade.register(JohnMarston)).toBeTruthy();
-    expect(await userFacade.register(AnakinSkywalker)).toBeTruthy();
-    expect(await userFacade.register(AdrianMonk)).toBeTruthy();
-  });
-
   test('should not register a new user due to bad email', async () => {
     // given
     const badUser = SampleUser.sampleNewUser({ id: '', email: 'qwerty' });
@@ -50,15 +53,6 @@ describe('registration', () => {
     // then
     await expect(userFacade.register(badUser)).rejects.toThrowError(
       'Email address is not valid',
-    );
-  });
-
-  test('should not register a new user due to already used email', async () => {
-    // given
-    const badUser = SampleUser.sampleNewUser(AdrianMonk);
-    // then
-    await expect(userFacade.register(badUser)).rejects.toThrowError(
-      'Email already used',
     );
   });
 
@@ -197,12 +191,57 @@ describe('registration', () => {
       'Password is not valid',
     );
   });
+
+  test('should register a new user', async () => {
+    expect(await userFacade.register(AnakinSkywalker)).toBeTruthy();
+    expect(await userFacade.register(JohnMarston)).toBeTruthy();
+  });
+
+  test('should not register a new user due to already used email', async () => {
+    // given
+    const badUser = SampleUser.sampleNewUser(AnakinSkywalker);
+    // then
+    await expect(userFacade.register(badUser)).rejects.toThrowError(
+      'Email already used',
+    );
+  });
+
+  test('should register a new user via OAuth', async () => {
+    const { oauthId, email, firstName, lastName } = AdrianMonk;
+    const registeredUser = await userFacade.oauth({
+      id: oauthId,
+      email,
+      firstName,
+      lastName,
+      picture: '',
+    });
+    AdrianMonk = { ...AdrianMonk, id: registeredUser.id };
+  });
+
+  test('should not register a user who used earlier OAuth and now custom form', async () => {
+    await expect(userFacade.register(AdrianMonk)).rejects.toThrowError(
+      'Email already used',
+    );
+  });
+
+  test('should not register a user who used earlier custom form and now OAuth', async () => {
+    const { oauthId, email, firstName, lastName } = AnakinSkywalker;
+    await expect(
+      userFacade.oauth({
+        id: oauthId,
+        email,
+        firstName,
+        lastName,
+        picture: '',
+      }),
+    ).rejects.toThrowError('Email already associated with a custom account');
+  });
 });
 
 describe('get', () => {
   test('should get the user by id', async () => {
-    expect(await userFacade.getById(JohnMarston.id)).toEqual(
-      SampleUser.sampleGetUser(JohnMarston),
+    expect(await userFacade.getById(AnakinSkywalker.id)).toEqual(
+      SampleUser.sampleGetUser(AnakinSkywalker),
     );
   });
 
@@ -324,8 +363,21 @@ describe('login', () => {
   test('should login', async () => {
     expect(
       await userFacade.login({
-        email: AdrianMonk.email,
-        password: AdrianMonk.password,
+        email: AnakinSkywalker.email,
+        password: AnakinSkywalker.password,
+      }),
+    ).toBeTruthy();
+  });
+
+  test('should login a user via OAuth', async () => {
+    const { oauthId, email, firstName, lastName } = AdrianMonk;
+    expect(
+      await userFacade.oauth({
+        id: oauthId,
+        email,
+        firstName,
+        lastName,
+        picture: '',
       }),
     ).toBeTruthy();
   });
@@ -333,7 +385,7 @@ describe('login', () => {
   test('should not login due to wrong password', async () => {
     await expect(
       userFacade.login({
-        email: AdrianMonk.email,
+        email: AnakinSkywalker.email,
         password: 'password1234',
       }),
     ).rejects.toThrowError('Wrong credentials');
@@ -342,10 +394,29 @@ describe('login', () => {
   test('should not login due to wrong email', async () => {
     await expect(
       userFacade.login({
-        email: 'monk@example.com',
-        password: AdrianMonk.password,
+        email: 'anakin@example.com',
+        password: AnakinSkywalker.password,
       }),
     ).rejects.toThrowError('Wrong credentials');
+  });
+
+  test('should not log in a user who used earlier OAuth and now custom form', async () => {
+    await expect(userFacade.login(AdrianMonk)).rejects.toThrowError(
+      'Email associated with Google account',
+    );
+  });
+
+  test('should not log in a user who used earlier custom form and now OAuth', async () => {
+    const { oauthId, email, firstName, lastName } = AnakinSkywalker;
+    await expect(
+      userFacade.oauth({
+        id: oauthId,
+        email,
+        firstName,
+        lastName,
+        picture: '',
+      }),
+    ).rejects.toThrowError('Email already associated with a custom account');
   });
 });
 
@@ -436,9 +507,9 @@ describe('update', () => {
 describe('delete', () => {
   test('should delete a user', async () => {
     // when
-    await userFacade.deleteById(JohnMarston.id);
+    await userFacade.deleteById(AnakinSkywalker.id);
     // then
-    await expect(userFacade.getById(JohnMarston.id)).rejects.toThrowError(
+    await expect(userFacade.getById(AnakinSkywalker.id)).rejects.toThrowError(
       'User not found',
     );
   });
