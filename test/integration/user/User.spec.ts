@@ -66,7 +66,6 @@ describe('/POST', () => {
       }),
     );
     await emailService.confirmEmail(token);
-    console.log(token);
     request(app.getHttpServer())
       .get(`/users/${JohnMarston.id}`)
       .send()
@@ -75,7 +74,6 @@ describe('/POST', () => {
         ...SampleUser.sampleGetUser(JohnMarston),
         isEmailVerified: true,
       });
-    // console.log(fetchedUser.body, 'fetched user');
   });
 
   test('successfull log in', async () => {

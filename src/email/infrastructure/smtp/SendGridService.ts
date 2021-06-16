@@ -60,7 +60,6 @@ export class SendGridService extends EmailService {
     const foundDocument: EmailVerificationDto = await this.emailRepository.findByToken(
       token,
     );
-    console.log(foundDocument.id);
     this.domainEventPublisher.publish(
       EMAIL_CONFIRMED,
       new EmailConfirmed({ id: foundDocument.id }),

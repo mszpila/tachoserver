@@ -141,8 +141,7 @@ export class UserFacade {
   async confirmEmail(id: string, isEmailVerified: boolean): Promise<void> {
     const user = await this.userRepository.findById(id);
     user.setIsEmailVerified(isEmailVerified);
-    console.log(await this.userRepository.update(user));
-    console.log(await this.userRepository.findById(id));
+    await this.userRepository.update(user);
   }
 
   async uploadProfileImage(): Promise<any> {
