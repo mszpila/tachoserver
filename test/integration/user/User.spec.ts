@@ -66,6 +66,7 @@ describe('/POST', () => {
       }),
     );
     await emailService.confirmEmail(token);
+    console.log(token);
     return await request(app.getHttpServer())
       .get(`/users/${JohnMarston.id}`)
       .send()
