@@ -67,15 +67,15 @@ describe('/POST', () => {
     );
     await emailService.confirmEmail(token);
     console.log(token);
-    const fetchedUser = await request(app.getHttpServer())
+    request(app.getHttpServer())
       .get(`/users/${JohnMarston.id}`)
       .send()
-      .expect(200);
-    // .expect({
-    //   ...SampleUser.sampleGetUser(JohnMarston),
-    //   isEmailVerified: true,
-    // });
-    console.log(fetchedUser.body, 'fetched user');
+      .expect(200)
+      .expect({
+        ...SampleUser.sampleGetUser(JohnMarston),
+        isEmailVerified: true,
+      });
+    // console.log(fetchedUser.body, 'fetched user');
   });
 
   test('successfull log in', async () => {
