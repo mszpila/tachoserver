@@ -1,5 +1,5 @@
-export * from './domain/AuthenticationService';
-export * from './domain/IAuthenticationRequest';
+export * from './JwtAccessTokenCreator';
+export * from './IAuthenticationRequest';
 
 export * from './jwt/ITokenPayload';
 export * from './jwt/JwtAuthGuard';
