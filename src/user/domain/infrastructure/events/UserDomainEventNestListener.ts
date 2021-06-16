@@ -18,6 +18,7 @@ export class UserDomainEventNestListener implements DomainEventListener {
 
   @OnEvent(EMAIL_CONFIRMED)
   handleEmailConfirmation(payload: EmailConfirmed): void {
+    console.log(payload);
     this.userFacade.confirmEmail(payload.getData().id, true);
   }
 }
