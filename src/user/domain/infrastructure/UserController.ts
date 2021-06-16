@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import {
-  AuthenticationService,
+  JwtAccessTokenCreator,
   AuthRequest,
   GoogleAuthGuard,
   JwtAuthGuard,
@@ -33,19 +33,19 @@ import { UserSnapshot } from '../UserSnapshot';
 export class UserController {
   constructor(
     private userFacade: UserFacade,
-    private authService: AuthenticationService,
+    private jwtAccessTokenCreator: JwtAccessTokenCreator,
   ) {}
 
   @Post('auth/register')
   async register(@Body() userDto: CreateUserDto): Promise<any> {
     const user = await this.userFacade.register(userDto);
-    return await this.authService.getAccessToken(user.id, user.userRoles);
+    return await this.jwtAccessTokenCreator.create(user.id, user.userRoles);
   }
 
   @Post('auth/login')
   async login(@Body() loginDto: LoginDto): Promise<any> {
     const user = await this.userFacade.login(loginDto);
-    return await this.authService.getAccessToken(user.id, user.userRoles);
+    return await this.jwtAccessTokenCreator.create(user.id, user.userRoles);
   }
 
   @Get('auth/google')
@@ -56,7 +56,7 @@ export class UserController {
   @UseGuards(GoogleAuthGuard)
   async processGoogleOAuth(@Req() req: AuthRequest<OAuthUserDto>) {
     const user: UserSnapshot = await this.userFacade.oauth(req.user);
-    return await this.authService.getAccessToken(user.id, user.userRoles);
+    return await this.jwtAccessTokenCreator.create(user.id, user.userRoles);
   }
 
   @Get('users')
@@ -87,8 +87,8 @@ export class UserController {
     return this.userFacade.deleteById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('auth/test')
+  @UseGuards(JwtAuthGuard)
   authTest(@Req() req: AuthRequest<JwtUserDto>) {
     const { id, roles }: JwtUserDto = req.user;
     return req.user;
