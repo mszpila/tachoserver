@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: app
+    command: npm run start:prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - .:/usr/src/app/
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+      - ./src/shared/authentication/.env
+      - ./src/email/.env
+    environment:
+      NODE_ENV: production
+      DB_URI: mongodb://admin:pass@mongodb/?authSource=admin
+      DB_NAME: tachoserver_docker
+    links:
+      - mongodb
+  mongodb:
+    image: mongo:latest
+    ports:
+      - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: pass
