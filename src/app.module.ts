@@ -14,7 +14,6 @@ import { EmailModule } from './email/email.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath,
-      // envFilePath: ['.env', './src/shared/authentication/.env'],
       validationSchema,
     }),
     ThrottlerModule.forRootAsync({
